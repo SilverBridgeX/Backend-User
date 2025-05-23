@@ -1,4 +1,4 @@
-package com.example.silverbridgeX_user.api_payload;
+package com.example.silverbridgeX_user.global.api_payload;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -6,11 +6,11 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @AllArgsConstructor
-public enum SuccessCode implements BaseCode {
+public enum ErrorCode implements BaseCode {
 
     // Common
-    OK(HttpStatus.OK, "COMMON_200", "Success"),
-    CREATED(HttpStatus.CREATED, "COMMON_201", "Created"),
+    BAD_REQUEST(HttpStatus.BAD_REQUEST, "COMMON_400", "잘못된 요청입니다."),
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COMMON_500", "서버 에러, 서버 개발자에게 문의하세요.")
 
     ;
 
@@ -22,7 +22,7 @@ public enum SuccessCode implements BaseCode {
     public ReasonDto getReason() {
         return ReasonDto.builder()
                 .httpStatus(this.httpStatus)
-                .isSuccess(true)
+                .isSuccess(false)
                 .code(this.code)
                 .message(this.message)
                 .build();

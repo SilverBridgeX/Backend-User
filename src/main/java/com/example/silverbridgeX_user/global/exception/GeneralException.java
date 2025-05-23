@@ -1,7 +1,7 @@
-package com.example.silverbridgeX_user.exception;
+package com.example.silverbridgeX_user.global.exception;
 
-import com.example.silverbridgeX_user.api_payload.ErrorCode;
-import com.example.silverbridgeX_user.api_payload.ReasonDto;
+import com.example.silverbridgeX_user.global.api_payload.ErrorCode;
+import com.example.silverbridgeX_user.global.api_payload.ReasonDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

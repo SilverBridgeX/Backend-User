@@ -1,4 +1,4 @@
-package com.example.silverbridgeX_user.entity;
+package com.example.silverbridgeX_user.global.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;

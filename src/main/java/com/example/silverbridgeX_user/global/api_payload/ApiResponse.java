@@ -1,4 +1,4 @@
-package com.example.silverbridgeX_user.api_payload;
+package com.example.silverbridgeX_user.global.api_payload;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;

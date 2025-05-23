@@ -1,4 +1,4 @@
-package com.example.silverbridgeX_user.api_payload;
+package com.example.silverbridgeX_user.global.api_payload;
 
 import lombok.Builder;
 import lombok.Getter;
