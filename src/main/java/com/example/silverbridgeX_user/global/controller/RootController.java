@@ -1,4 +1,4 @@
-package com.example.silverbridgeX_user;
+package com.example.silverbridgeX_user.global.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

@@ -1,4 +1,4 @@
-package com.example.silverbridgeX_user.config;
+package com.example.silverbridgeX_user.global.config;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
