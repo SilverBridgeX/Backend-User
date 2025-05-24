@@ -51,6 +51,6 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script_stop: true
           script: |
-            echo '${{ secrets.ENV }}' > /home/ubuntu/.env.chat
+            echo '${{ secrets.ENV }}' > /home/ubuntu/.env.user
             chmod +x /home/ubuntu/deploy.sh
             /home/ubuntu/deploy.sh
