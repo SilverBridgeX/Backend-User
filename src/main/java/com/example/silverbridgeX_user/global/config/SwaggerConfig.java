@@ -6,11 +6,15 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class SwaggerConfig {
+
+    @Value("${app.prefix}")
+    private String prefix;
 
     @Bean
     public OpenAPI SILVERBRIDGEXUSERAPI() {
@@ -33,7 +37,7 @@ public class SwaggerConfig {
         //.name("Authorization")); // 헤더의 이름
 
         return new OpenAPI()
-                .addServersItem(new Server().url("/"))
+                .addServersItem(new Server().url(prefix))
                 .info(info)
                 .addSecurityItem(securityRequirement)
                 .components(components);

@@ -5,6 +5,8 @@ spring:
 springdoc:
   swagger-ui:
     path: /swagger
+    url: ${swagger.ui.url}
+    config-url: ${swagger.config.url}
   cache:
     disabled: true
   use-fqn: true
