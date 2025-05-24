@@ -9,6 +9,11 @@ springdoc:
     disabled: true
   use-fqn: true
 
+festival:
+  api:
+    key:
+      decoded: ${festival.api.key.decoded}
+
 ---
 
 # local profile
@@ -37,35 +42,3 @@ spring:
         hbm2ddl:
           auto: update
         default_batch_fetch_size: 1000
-
----
-
-# develop profile
-#spring:
-#  config:
-#    activate:
-#      on-profile: develop
-#  datasource:
-#    url: ${aws.db.url}
-#    username: ${aws.db.username}
-#    password: ${aws.db.password}
-#    driver-class-name: org.postgresql.Driver
-#  sql:
-#    init:
-#      mode: never
-#  jpa:
-#    properties:
-#      hibernate:
-#        jdbc:
-#          batch_size: 10000
-#        order_inserts: true
-#        order_updates: true
-#        use_sql_comments: true
-#        hbm2ddl:
-#          auto: update
-#        default_batch_fetch_size: 1000
-#
-#logging:
-#  level:
-#    com.zaxxer.hikari: DEBUG
-#    org.springframework.boot.autoconfigure.jdbc: DEBUG
