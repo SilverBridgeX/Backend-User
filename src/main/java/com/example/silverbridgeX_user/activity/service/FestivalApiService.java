@@ -29,7 +29,7 @@ public class FestivalApiService {
     private final EmbeddingClient embeddingClient;
     private final ActivityNativeRepository activityNativeRepository;
 
-    @Value("${festival.api.key.decoded}")
+    @Value("${activity.api.key.festival}")
     private String apiKey;
 
     public void fetchAndSaveFestivalData() throws Exception {

@@ -16,10 +16,10 @@ jwt:
   accessExpirationTime: ${jwt.expiration}
   refreshExpirationTime: ${jwt.refresh.expiration}
 
-festival:
+activity:
   api:
     key:
-      decoded: ${festival.api.key.decoded}
+      festival: ${activity.api.key.festival}
 
 #org:
 #  neo4j:
