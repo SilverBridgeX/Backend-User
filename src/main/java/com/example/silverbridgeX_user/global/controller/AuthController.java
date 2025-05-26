@@ -21,9 +21,11 @@ public class AuthController {
         User user = userService.findByUserName(customUserDetails.getUsername());
 
         String userId = String.valueOf(user.getId());
+        String userName = user.getUsername();
 
         return ResponseEntity.ok()
                 .header("X-User-Id", userId)
+                .header("X-User-Name", userName)
                 .body("OK");
     }
 }
