@@ -1,53 +1,60 @@
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '3.3.4'
-	id 'io.spring.dependency-management' version '1.1.6'
+    id 'java'
+    id 'org.springframework.boot' version '3.3.4'
+    id 'io.spring.dependency-management' version '1.1.6'
 }
 
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
-	}
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
 }
 
 configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
 
-	// spring boot
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    // spring boot
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
 
-	// lombok
-	compileOnly 'org.projectlombok:lombok'
-	annotationProcessor 'org.projectlombok:lombok'
+    // lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 
-	// db
-	implementation 'org.postgresql:postgresql:42.7.1'
+    // jwt
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
-	// test
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    // db
+    implementation 'org.postgresql:postgresql:42.7.1'
+//    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'org.neo4j.driver:neo4j-java-driver:5.14.0'
 
-	// swaggerDoc
-//	implementation 'io.springfox:springfox-swagger2:2.9.2'
-//	implementation 'io.springfox:springfox-swagger-ui:2.9.2'
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
+    // test
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // swaggerDoc
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
 
 
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+    useJUnitPlatform()
 }
