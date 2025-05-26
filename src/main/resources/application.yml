@@ -21,13 +21,13 @@ festival:
     key:
       decoded: ${festival.api.key.decoded}
 
-org:
-  neo4j:
-    driver:
-      uri: bolt://localhost:7687 #테스트용
-      authentication:
-        username: neo4j
-        password: password123
+#org:
+#  neo4j:
+#    driver:
+#      uri:
+#      authentication:
+#        username:
+#        password:
 
 ---
 
