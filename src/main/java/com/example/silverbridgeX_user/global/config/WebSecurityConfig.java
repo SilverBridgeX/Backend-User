@@ -23,9 +23,11 @@ public class WebSecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authHttp -> authHttp
                         .requestMatchers(
-                                "/user/health", // health check
+                                "/health", // health check
+                                "/check/**",
                                 "/swagger-ui/**", // swagger
-                                "/v3/api-docs/**"
+                                "/v3/api-docs/**",
+                                "/auth/verify"
                         )
                         .permitAll()
                         .anyRequest().permitAll()
