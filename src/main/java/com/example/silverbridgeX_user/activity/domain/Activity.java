@@ -27,10 +27,11 @@ public class Activity {
 
     private ActivityType activityType;
 
+    @Column(length = 1000)
     private String description;
 
     @Column(columnDefinition = "vector(384)")
-    @Transient // JPA 저장 시 무시
+    @Transient
     private String descriptionEmbedding;
 
     private String streetAddress;
