@@ -80,9 +80,9 @@ public class ActivityService {
                                         .homepageUrl(dto.getHomepageUrl())
                                         .phoneNumber(dto.getPhoneNumber())
                                         .activityType(ActivityType.FESTIVAL)
-                                        .chosen(0L)
-                                        .shown(0L)
-                                        .CTR(0.0)
+                                        .clickNum(0L)
+                                        .impressionNum(0L)
+                                        .ctr(0.0)
                                         .build();
                                 activityRepository.save(activity);
 
@@ -139,9 +139,9 @@ public class ActivityService {
                                         .endDate(LocalDate.parse("2999-12-31"))
                                         .phoneNumber(dto.getPhoneNumber())
                                         .activityType(ActivityType.TOUR_SPOT)
-                                        .chosen(0L)
-                                        .shown(0L)
-                                        .CTR(0.0)
+                                        .clickNum(0L)
+                                        .impressionNum(0L)
+                                        .ctr(0.0)
                                         .build();
                                 activityRepository.save(activity);
 

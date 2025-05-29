@@ -52,7 +52,7 @@ public class Activity {
 
     private Long impressionNum;
 
-    private Double CTR;
+    private Double ctr;
 
     public void updateCoordinate(String longitude, String latitude) {
         this.longitude = longitude;
