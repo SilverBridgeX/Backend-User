@@ -7,7 +7,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -55,12 +54,10 @@ public class User extends BaseEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     private List<String> dislikeKeywords;
 
-    @Column(columnDefinition = "vector(384)")
-    @Transient
+    @Column(name = "preferred_embedding", columnDefinition = "vector(384)", insertable = false, updatable = false)
     private String preferredEmbedding;
 
-    @Column(columnDefinition = "vector(384)")
-    @Transient
+    @Column(name = "dislike_embedding", columnDefinition = "vector(384)", insertable = false, updatable = false)
     private String dislikeEmbedding;
 
     public User(String username, String nickname, String email) {

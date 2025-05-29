@@ -51,7 +51,7 @@ public class UserService {
         userRepository.save(newUser);
 
         // Neo4j 사용자 노드 만들기
-        //insertUserNodeIfNotExists(newUser.getId(), newUser.getUsername());
+        insertUserNodeIfNotExists(newUser.getId(), newUser.getUsername());
 
         manager.loadUserByUsername(userReqDto.getUsername()); // 저장된 사용자 정보를 다시 로드하여 동기화 시도
         return newUser;
@@ -162,9 +162,9 @@ public class UserService {
                             "keywords", List.of(),         // 기본 null 대신 빈 리스트
                             "embedding", List.of()         // 빈 float 배열
                     ));
-                    System.out.println("사용자 노드 생성 완료: " + name);
+                    log.info("사용자 노드 생성 완료: " + name);
                 } else {
-                    System.out.println("이미 존재: " + name);
+                    log.info("이미 존재: " + name);
                 }
                 return null;
             });
