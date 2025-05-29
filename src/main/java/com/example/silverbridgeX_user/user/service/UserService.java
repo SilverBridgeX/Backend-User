@@ -12,7 +12,6 @@ import com.example.silverbridgeX_user.user.repository.RefreshTokenRepository;
 import com.example.silverbridgeX_user.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -51,7 +50,7 @@ public class UserService {
         userRepository.save(newUser);
 
         // Neo4j 사용자 노드 만들기
-        insertUserNodeIfNotExists(newUser.getId(), newUser.getUsername());
+        insertUserNodeIfNotExists(newUser.getId());
 
         manager.loadUserByUsername(userReqDto.getEmail()); // 저장된 사용자 정보를 다시 로드하여 동기화 시도
         return newUser;
@@ -138,7 +137,7 @@ public class UserService {
         log.info("{} 회원 탈퇴 완료", username);
     }
 
-    public void insertUserNodeIfNotExists(Long userId, String name) {
+    public void insertUserNodeIfNotExists(Long userId) {
         try (Session session = driver.session()) {
             session.writeTransaction(tx -> {
                 // 존재 여부 확인
@@ -153,18 +152,13 @@ public class UserService {
                                 CREATE (u:User {
                                     id: $id,
                                     name: $name,
-                                    keywords: $keywords,
-                                    embedding: $embedding
                                 })
                             """, Map.of(
-                            "id", userId,
-                            "name", name,
-                            "keywords", List.of(),         // 기본 null 대신 빈 리스트
-                            "embedding", List.of()         // 빈 float 배열
+                            "id", userId
                     ));
-                    log.info("사용자 노드 생성 완료: " + name);
+                    log.info("사용자 노드 생성 완료: " + userId);
                 } else {
-                    log.info("이미 존재: " + name);
+                    log.info("이미 존재: " + userId);
                 }
                 return null;
             });
