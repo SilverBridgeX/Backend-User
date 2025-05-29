@@ -56,4 +56,17 @@ public class Activity {
 
     private Double CTR;
 
+    public void updateCoordinate(String longitude, String latitude) {
+        this.longitude = longitude;
+        this.latitude = latitude;
+    }
+
+    public void updateLongitude(String longitude) {
+        this.longitude = longitude;
+    }
+
+    public void updateLatitude(String latitude) {
+        this.latitude = latitude;
+    }
+
 }

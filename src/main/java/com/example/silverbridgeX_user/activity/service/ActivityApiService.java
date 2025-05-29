@@ -55,4 +55,10 @@ public class ActivityApiService {
                 .path("items");
     }
 
+    public JsonNode parsePoint(String json) throws Exception {
+        return objectMapper.readTree(json)
+                .path("response")
+                .path("result")
+                .path("point");
+    }
 }
