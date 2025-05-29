@@ -29,7 +29,7 @@ public class Activity {
     @Column(length = 1000)
     private String description;
 
-    @Column(columnDefinition = "vector(384)")
+    @Column(name = "description_embedding", columnDefinition = "vector(384)", insertable = false, updatable = false)
     private String descriptionEmbedding;
 
     private String streetAddress;
