@@ -53,7 +53,7 @@ public class UserService {
         // Neo4j 사용자 노드 만들기
         insertUserNodeIfNotExists(newUser.getId(), newUser.getUsername());
 
-        manager.loadUserByUsername(userReqDto.getUsername()); // 저장된 사용자 정보를 다시 로드하여 동기화 시도
+        manager.loadUserByUsername(userReqDto.getEmail()); // 저장된 사용자 정보를 다시 로드하여 동기화 시도
         return newUser;
     }
 

@@ -11,7 +11,7 @@ public class UserConverter {
 
         return User.builder()
                 .email(userReqDto.getEmail())
-                .username(userReqDto.getUsername())
+                .username(userReqDto.getEmail())
                 .nickname(userReqDto.getNickname())
                 .build();
     }

@@ -19,9 +19,6 @@ public class UserRequestDto {
         @Schema(description = "이메일")
         private String email;
 
-        @Schema(description = "이메일id{social}")
-        private String username;
-
         @Schema(description = "닉네임")
         private String nickname;
 
