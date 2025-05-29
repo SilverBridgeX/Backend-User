@@ -48,9 +48,9 @@ public class Activity {
 
     private String phoneNumber;
 
-    private Long chosen;
+    private Long clickNum;
 
-    private Long shown;
+    private Long impressionNum;
 
     private Double CTR;
 
