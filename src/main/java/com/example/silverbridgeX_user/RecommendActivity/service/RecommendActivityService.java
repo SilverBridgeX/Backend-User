@@ -37,8 +37,8 @@ public class RecommendActivityService {
         // 1. 로그 저장
         Activity activity = activityRepository.findById(activityId)
                 .orElseThrow(() -> GeneralException.of(ErrorCode.ACTIVITY_NOT_FOUND));
-        ActivityLog log = ActivityLogConverter.saveActivityLog(user, activity, now, "SELECT");
-        activityLogRepository.save(log);
+        ActivityLog activityLog = ActivityLogConverter.saveActivityLog(user, activity, now, "SELECT");
+        activityLogRepository.save(activityLog);
 
         // 2. 간선 갱신
         try (Session session = neo4jDriver.session()) {
@@ -48,14 +48,26 @@ public class RecommendActivityService {
                                 MATCH (u:User {id: $uid})-[r:PREFERRED]->(a:Activity {id: $aid})
                                 DELETE r
                                 """,
-                        Map.of("uid", user.getId().toString(), "aid", "act" + activity.getId()));
+                        Map.of("uid", user.getId(), "aid", activity.getId()));
 
                 // :SELECTED 생성
                 tx.run("""
                                 MATCH (u:User {id: $uid}), (a:Activity {id: $aid})
                                 MERGE (u)-[:SELECTED]->(a)
                                 """,
-                        Map.of("uid", user.getId().toString(), "aid", "act" + activity.getId()));
+                        Map.of("uid", user.getId(), "aid", activity.getId()));
+
+                // 생성됐는지 확인
+                var checkResult = tx.run("""
+                                MATCH (u:User {id: $uid})-[r:SELECTED]->(a:Activity {id: $aid})
+                                RETURN COUNT(r) > 0 AS exists
+                                """,
+                        Map.of("uid", user.getId(), "aid", activity.getId()));
+
+                boolean exists = checkResult.single().get("exists").asBoolean();
+                if (!exists) {
+                    log.error("사용자 활동 SELECT 간선이 생기지 않았습니다.");
+                }
 
                 return null;
             });
