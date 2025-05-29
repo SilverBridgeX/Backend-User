@@ -7,11 +7,15 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Getter
@@ -44,6 +48,20 @@ public class User extends BaseEntity {
     private String longitude;
 
     private String profileImage;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    private List<String> preferredKeywords;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    private List<String> dislikeKeywords;
+
+    @Column(columnDefinition = "vector(384)")
+    @Transient
+    private String preferredEmbedding;
+
+    @Column(columnDefinition = "vector(384)")
+    @Transient
+    private String dislikeEmbedding;
 
     public User(String username, String nickname, String email) {
         this.username = username;
