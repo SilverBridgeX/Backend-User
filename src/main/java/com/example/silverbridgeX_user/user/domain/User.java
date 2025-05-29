@@ -1,11 +1,14 @@
 package com.example.silverbridgeX_user.user.domain;
 
 import com.example.silverbridgeX_user.global.entity.BaseEntity;
+import com.example.silverbridgeX_user.matching.domain.MatchRequest;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.List;
 import lombok.AccessLevel;
@@ -47,6 +50,9 @@ public class User extends BaseEntity {
     private String longitude;
 
     private String profileImage;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private MatchRequest matchRequest;
 
     @JdbcTypeCode(SqlTypes.JSON)
     private List<String> preferredKeywords;

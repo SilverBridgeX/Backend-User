@@ -28,6 +28,8 @@ public enum SuccessCode implements BaseCode {
     RECOMMEND_ACTIVITY_SELECT_LOG_SUCCESS(HttpStatus.OK, "ACTIVITY_2002", "선택한 활동 로그와 selected 간선 저장 완료했습니다."),
     RECOMMEND_ACTIVITY_VIEW_LOG_SUCCESS(HttpStatus.OK, "ACTIVITY_2002", "열람한 활동 로그를 저장 완료했습니다."),
 
+    // MatchRequest
+    MATCH_REQUEST_SUCCESS(HttpStatus.OK, "MATCH_REQUEST_2001", "매치 신청이 완료되었습니다."),
     ;
 
     private final HttpStatus httpStatus;
