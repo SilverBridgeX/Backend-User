@@ -22,6 +22,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.neo4j.driver.Driver;
 import org.neo4j.driver.Session;
 import org.neo4j.driver.Values;
 import org.springframework.stereotype.Service;
@@ -35,7 +36,7 @@ public class ActivityService {
     private final ActivityNativeRepository activityNativeRepository;
     private final ActivityApiService activityApiService;
 
-    private final org.neo4j.driver.Driver driver;
+    private final Driver driver;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     String festivalApiUrl = "http://api.data.go.kr/openapi/tn_pubr_public_cltur_fstvl_api";
