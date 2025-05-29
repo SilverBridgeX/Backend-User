@@ -16,6 +16,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -257,6 +258,11 @@ public class ActivityService {
         List<Activity> activities = activityRepository.findAll();
 
         for (Activity activity : activities) {
+            List<Float> embeddingVector = parseEmbeddingVector(activity.getDescriptionEmbedding());
+            String description = activity.getDescription().length() > 100
+                    ? activity.getDescription().substring(0, 100)
+                    : activity.getDescription();
+
             try (Session session = driver.session()) {
                 session.writeTransaction(tx -> {
                     tx.run("""
@@ -272,8 +278,8 @@ public class ActivityService {
                             Values.parameters(
                                     "id", activity.getId(),
                                     "name", activity.getName(),
-                                    "description", activity.getDescription(),
-                                    "embedding", activity.getDescriptionEmbedding(),
+                                    "description", description,
+                                    "embedding", embeddingVector,
                                     "latitude", activity.getLatitude(),
                                     "longitude", activity.getLongitude(),
                                     "startDate", activity.getStartDate(),
@@ -283,6 +289,20 @@ public class ActivityService {
                 });
             }
         }
+    }
+
+    private List<Float> parseEmbeddingVector(String str) {
+        if (str == null || str.isBlank()) {
+            return List.of();
+        }
+
+        str = str.replaceAll("[\\[\\]]", "");
+        String[] tokens = str.split(",");
+        List<Float> result = new ArrayList<>();
+        for (String token : tokens) {
+            result.add(Float.parseFloat(token.trim()));
+        }
+        return result;
     }
 
 }

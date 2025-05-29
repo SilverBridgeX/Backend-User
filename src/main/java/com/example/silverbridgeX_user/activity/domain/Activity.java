@@ -5,7 +5,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Transient;
 import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,7 +30,6 @@ public class Activity {
     private String description;
 
     @Column(columnDefinition = "vector(384)")
-    @Transient
     private String descriptionEmbedding;
 
     private String streetAddress;
