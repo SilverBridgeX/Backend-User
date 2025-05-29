@@ -1,5 +1,7 @@
 package com.example.silverbridgeX_user.RecommendActivity.service;
 
+import com.example.silverbridgeX_user.RecommendActivity.domain.RecommendActivity;
+import com.example.silverbridgeX_user.RecommendActivity.repository.RecommendActivityRepository;
 import com.example.silverbridgeX_user.activity.converter.ActivityLogConverter;
 import com.example.silverbridgeX_user.activity.domain.Activity;
 import com.example.silverbridgeX_user.activity.domain.ActivityLog;
@@ -9,6 +11,7 @@ import com.example.silverbridgeX_user.global.api_payload.ErrorCode;
 import com.example.silverbridgeX_user.global.exception.GeneralException;
 import com.example.silverbridgeX_user.user.domain.User;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,9 +25,14 @@ import org.springframework.stereotype.Service;
 public class RecommendActivityService {
     private final ActivityLogRepository activityLogRepository;
     private final ActivityRepository activityRepository;
-    private final Driver neo4jDriver;  // Neo4j Java Driver
+    private final RecommendActivityRepository recommendActivityRepository;
+    private final Driver neo4jDriver;
 
-    public void handleActivitySelection(User user, Long activityId){
+    public List<RecommendActivity> getRecommendActivities(User user) {
+        return recommendActivityRepository.findAllByUser(user);
+    }
+
+    public void handleActivitySelection(User user, Long activityId) {
         LocalDateTime now = LocalDateTime.now();
         // 1. 로그 저장
         Activity activity = activityRepository.findById(activityId)
@@ -37,16 +45,16 @@ public class RecommendActivityService {
             session.writeTransaction(tx -> {
                 // 기존 :PREFERRED 제거
                 tx.run("""
-                    MATCH (u:User {id: $uid})-[r:PREFERRED]->(a:Activity {id: $aid})
-                    DELETE r
-                    """,
+                                MATCH (u:User {id: $uid})-[r:PREFERRED]->(a:Activity {id: $aid})
+                                DELETE r
+                                """,
                         Map.of("uid", user.getId().toString(), "aid", "act" + activity.getId()));
 
                 // :SELECTED 생성
                 tx.run("""
-                    MATCH (u:User {id: $uid}), (a:Activity {id: $aid})
-                    MERGE (u)-[:SELECTED]->(a)
-                    """,
+                                MATCH (u:User {id: $uid}), (a:Activity {id: $aid})
+                                MERGE (u)-[:SELECTED]->(a)
+                                """,
                         Map.of("uid", user.getId().toString(), "aid", "act" + activity.getId()));
 
                 return null;
@@ -54,7 +62,8 @@ public class RecommendActivityService {
         }
     }
 
-    public void handleActivityView(User user, Long activityId, LocalDateTime now){
+    public void handleActivityView(User user, Long activityId) {
+        LocalDateTime now = LocalDateTime.now();
         Activity activity = activityRepository.findById(activityId)
                 .orElseThrow(() -> GeneralException.of(ErrorCode.ACTIVITY_NOT_FOUND));
         ActivityLog log = ActivityLogConverter.saveActivityLog(user, activity, now, "VIEW");
