@@ -1,17 +1,15 @@
 package com.example.silverbridgeX_user.user.domain;
 
 import com.example.silverbridgeX_user.global.entity.BaseEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.example.silverbridgeX_user.matching.domain.MatchRequest;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.regex.MatchResult;
 
 @Entity
 @Getter
@@ -41,7 +39,12 @@ public class User extends BaseEntity {
 
     private String latitude;
 
+    private String longitude;
+
     private String profileImage;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private MatchRequest matchRequest;
 
     public User(String username, String nickname, String email) {
         this.username = username;
