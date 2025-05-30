@@ -150,8 +150,7 @@ public class UserService {
                 if (!exists) {
                     tx.run("""
                                 CREATE (u:User {
-                                    id: $id,
-                                    name: $name,
+                                    id: $id
                                 })
                             """, Map.of(
                             "id", userId
