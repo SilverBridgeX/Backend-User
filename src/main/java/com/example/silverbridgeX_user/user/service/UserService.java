@@ -7,19 +7,23 @@ import com.example.silverbridgeX_user.user.domain.RefreshToken;
 import com.example.silverbridgeX_user.user.domain.User;
 import com.example.silverbridgeX_user.user.dto.JwtDto;
 import com.example.silverbridgeX_user.user.dto.UserRequestDto;
+import com.example.silverbridgeX_user.user.dto.UserRequestDto.UserPreferenceDto;
 import com.example.silverbridgeX_user.user.jwt.JwtTokenUtils;
 import com.example.silverbridgeX_user.user.repository.RefreshTokenRepository;
 import com.example.silverbridgeX_user.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.Session;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 @Slf4j
 @Service
@@ -29,8 +33,10 @@ public class UserService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final JpaUserDetailsManager manager;
     private final JwtTokenUtils jwtTokenUtils;
-
+    private final RestTemplate restTemplate;
     private final Driver driver;
+
+    private final String PREF_URL = "http://localhost:3000/summary/preferences/all";
 
     @Transactional
     public User findByUserName(String userName) {
@@ -174,4 +180,25 @@ public class UserService {
         user.updateNickname(nickname);
     }
 
+    public void updatePreferredKeywords() {
+        ResponseEntity<UserPreferenceDto[]> response
+                = restTemplate.getForEntity(PREF_URL, UserPreferenceDto[].class);
+        UserPreferenceDto[] dtos = response.getBody();
+
+        if (dtos == null) {
+            return;
+        }
+
+        for (UserPreferenceDto dto : dtos) {
+            userRepository.findById(dto.getUserId()).ifPresent(user -> {
+                List<String> deduplicated = dto.getPreferences().stream()
+                        .distinct()
+                        .toList();
+
+                user.updatePreferredKeywords(deduplicated);
+                userRepository.save(user);
+                log.info(user.toString());
+            });
+        }
+    }
 }
