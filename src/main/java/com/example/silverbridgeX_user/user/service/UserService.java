@@ -11,6 +11,7 @@ import com.example.silverbridgeX_user.user.dto.UserRequestDto.UserPreferenceDto;
 import com.example.silverbridgeX_user.user.jwt.JwtTokenUtils;
 import com.example.silverbridgeX_user.user.repository.RefreshTokenRepository;
 import com.example.silverbridgeX_user.user.repository.UserRepository;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import java.util.List;
@@ -39,7 +40,12 @@ public class UserService {
 
     @Value("${chat.server.url}")
     private String chatServerUrl;
-    private final String PREF_URL = chatServerUrl + "/summary/preferences/all";
+    private String PREF_URL;
+
+    @PostConstruct
+    public void init() {
+        this.PREF_URL = chatServerUrl + "/summary/preferences/all";
+    }
 
     @Transactional
     public User findByUserName(String userName) {
