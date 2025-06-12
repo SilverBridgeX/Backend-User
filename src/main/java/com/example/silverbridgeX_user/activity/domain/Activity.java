@@ -24,6 +24,7 @@ public class Activity {
     @Column(unique = true)
     private String name;
 
+    @Column(nullable = false)
     private ActivityType activityType;
 
     @Column(length = 1000)
