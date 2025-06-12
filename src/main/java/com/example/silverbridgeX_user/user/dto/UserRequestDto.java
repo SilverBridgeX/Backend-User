@@ -1,6 +1,7 @@
 package com.example.silverbridgeX_user.user.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -55,4 +56,16 @@ public class UserRequestDto {
         @Schema(description = "상세 주소")
         private String detailedAddress;
     }
+
+    @Schema(description = "UserPreferenceDto")
+    @Getter
+    @Setter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class UserPreferenceDto {
+        private Long userId;
+        private List<String> preferences;
+    }
+
 }
