@@ -60,6 +60,9 @@ public class User extends BaseEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     private List<String> dislikeKeywords;
 
+    @Column(name = "activity_embedding_avg", columnDefinition = "vector(384)", insertable = false, updatable = false)
+    private String activityEmbeddingAvg;
+
     @Column(name = "preferred_embedding", columnDefinition = "vector(384)", insertable = false, updatable = false)
     private String preferredEmbedding;
 
@@ -76,6 +79,9 @@ public class User extends BaseEntity {
         this.nickname = nickname;
     }
 
+    public void updatePreferredKeywords(List<String> keywords) {
+        this.preferredKeywords = keywords;
+    }
 }
 
 

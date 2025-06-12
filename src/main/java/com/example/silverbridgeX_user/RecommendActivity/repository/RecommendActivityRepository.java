@@ -7,4 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface RecommendActivityRepository extends JpaRepository<RecommendActivity, Long> {
     List<RecommendActivity> findAllByUser(User user);
+
+    void deleteByUser(User user);
 }

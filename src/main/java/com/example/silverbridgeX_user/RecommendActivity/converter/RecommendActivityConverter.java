@@ -4,12 +4,22 @@ import com.example.silverbridgeX_user.RecommendActivity.domain.RecommendActivity
 import com.example.silverbridgeX_user.RecommendActivity.dto.RecommendActivityResponseDto.RecommendActivityResDto;
 import com.example.silverbridgeX_user.RecommendActivity.dto.RecommendActivityResponseDto.RecommendActivityResDtos;
 import com.example.silverbridgeX_user.activity.domain.Activity;
+import com.example.silverbridgeX_user.user.domain.User;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
-import lombok.NoArgsConstructor;
 
-@NoArgsConstructor
 public class RecommendActivityConverter {
+    public static RecommendActivity saveRecommendActivity(LocalDate date, Integer number, User user,
+                                                          Activity activity) {
+        return RecommendActivity.builder()
+                .date(date)
+                .user(user)
+                .number(number)
+                .activity(activity)
+                .build();
+    }
+
     public static RecommendActivityResDto recommendActivityResDto(RecommendActivity recommendActivity) {
         Activity activity = recommendActivity.getActivity();
         String address =

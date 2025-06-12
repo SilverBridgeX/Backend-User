@@ -9,8 +9,10 @@ import com.example.silverbridgeX_user.activity.repository.ActivityRepository;
 import com.example.silverbridgeX_user.global.api_payload.ErrorCode;
 import com.example.silverbridgeX_user.global.exception.GeneralException;
 import com.example.silverbridgeX_user.global.util.EmbeddingClient;
+import com.example.silverbridgeX_user.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -35,6 +37,7 @@ public class ActivityService {
     private final EmbeddingClient embeddingClient;
     private final ActivityNativeRepository activityNativeRepository;
     private final ActivityApiService activityApiService;
+    private final UserRepository userRepository;
 
     private final Driver driver;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -270,7 +273,6 @@ public class ActivityService {
                                     MERGE (a:Activity {id: $id})
                                     SET a.name = $name,
                                         a.description = $description,
-                                        a.embedding = $embedding,
                                         a.latitude = $latitude,
                                         a.longitude = $longitude,
                                         a.startDate = $startDate,
@@ -280,7 +282,6 @@ public class ActivityService {
                                     "id", activity.getId(),
                                     "name", activity.getName(),
                                     "description", description,
-                                    "embedding", embeddingVector,
                                     "latitude", activity.getLatitude(),
                                     "longitude", activity.getLongitude(),
                                     "startDate", activity.getStartDate(),
@@ -306,4 +307,9 @@ public class ActivityService {
         return result;
     }
 
+    @Transactional
+    public void updateActivityEmbedding() {
+        System.out.println("startttt");
+        System.out.println(userRepository.updateActivityEmbeddingAvgForUsers());
+    }
 }
