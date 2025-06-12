@@ -9,13 +9,16 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 public class EmbeddingClient {
+    @Value("${ai.server.url}")
+    private String aiServerUrl;
 
     public String getEmbeddingLiteral(String text) throws Exception {
-        URL url = new URL("http://ai-server:8000/embedding");
+        URL url = new URL(aiServerUrl + "/embedding");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
         conn.setRequestMethod("POST");

@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.Session;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -36,7 +37,9 @@ public class UserService {
     private final RestTemplate restTemplate;
     private final Driver driver;
 
-    private final String PREF_URL = "http://chat-server:3000/summary/preferences/all";
+    @Value("${chat.server.url}")
+    private String chatServerUrl;
+    private final String PREF_URL = chatServerUrl + "/summary/preferences/all";
 
     @Transactional
     public User findByUserName(String userName) {
