@@ -36,7 +36,7 @@ public class UserService {
     private final RestTemplate restTemplate;
     private final Driver driver;
 
-    private final String PREF_URL = "http://localhost:3000/summary/preferences/all";
+    private final String PREF_URL = "http://chat-server:3000/summary/preferences/all";
 
     @Transactional
     public User findByUserName(String userName) {

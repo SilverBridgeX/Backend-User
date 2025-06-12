@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 public class EmbeddingClient {
 
     public String getEmbeddingLiteral(String text) throws Exception {
-        URL url = new URL("http://localhost:8000/embedding");
+        URL url = new URL("http://ai-server:8000/embedding");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
         conn.setRequestMethod("POST");
