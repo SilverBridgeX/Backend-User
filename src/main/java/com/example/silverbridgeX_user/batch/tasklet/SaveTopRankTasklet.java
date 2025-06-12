@@ -1,5 +1,6 @@
 package com.example.silverbridgeX_user.batch.tasklet;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
@@ -16,7 +17,7 @@ public class SaveTopRankTasklet implements Tasklet {
     private final JdbcTemplate jdbc;
 
     @Override
-    public RepeatStatus execute(StepContribution con, ChunkContext ctx) {
+    public RepeatStatus execute(@NonNull StepContribution con, @NonNull ChunkContext ctx) {
         jdbc.update("DELETE FROM activity_ranking");
         jdbc.update("""
                     INSERT INTO activity_ranking (activity_id, rank)

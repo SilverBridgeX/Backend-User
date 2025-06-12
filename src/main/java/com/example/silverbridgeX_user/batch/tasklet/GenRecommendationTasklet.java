@@ -1,6 +1,7 @@
 package com.example.silverbridgeX_user.batch.tasklet;
 
 import com.example.silverbridgeX_user.RecommendActivity.service.RecommendActivityService;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
@@ -15,7 +16,7 @@ public class GenRecommendationTasklet implements Tasklet {
     private final RecommendActivityService recService;
 
     @Override
-    public RepeatStatus execute(StepContribution con, ChunkContext ctx) {
+    public RepeatStatus execute(@NonNull StepContribution con, @NonNull ChunkContext ctx) {
         recService.generateAllUsersRecommendation();
         return RepeatStatus.FINISHED;
     }

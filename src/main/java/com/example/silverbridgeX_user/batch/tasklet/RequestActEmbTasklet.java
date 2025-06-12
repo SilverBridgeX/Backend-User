@@ -1,6 +1,7 @@
 package com.example.silverbridgeX_user.batch.tasklet;
 
 import com.example.silverbridgeX_user.user.repository.UserRepository;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.StepContribution;
@@ -18,7 +19,7 @@ public class RequestActEmbTasklet implements Tasklet {
     private final UserRepository userRepository;
 
     @Override
-    public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) {
+    public RepeatStatus execute(@NonNull StepContribution contribution, @NonNull ChunkContext chunkContext) {
 
         int updatedCount = userRepository.updateActivityEmbeddingAvgForUsers();
         log.info("사용자 활동 임베딩 평균 업데이트 완료: " + updatedCount + " rows affected");

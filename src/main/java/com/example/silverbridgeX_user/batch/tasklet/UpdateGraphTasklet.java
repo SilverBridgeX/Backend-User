@@ -3,6 +3,7 @@ package com.example.silverbridgeX_user.batch.tasklet;
 import com.example.silverbridgeX_user.RecommendActivity.service.RecommendActivityService;
 import java.util.List;
 import java.util.Map;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
@@ -20,7 +21,7 @@ public class UpdateGraphTasklet implements Tasklet {
     private final RecommendActivityService recommendSvc;    // Neo4j 간선 INSERT 담당
 
     @Override
-    public RepeatStatus execute(StepContribution con, ChunkContext ctx) {
+    public RepeatStatus execute(@NonNull StepContribution con, @NonNull ChunkContext ctx) {
 
         /*************** 1) 사용자 → 활동 :PREFERRED (Top-2) ****************/
         String preferredSql = """

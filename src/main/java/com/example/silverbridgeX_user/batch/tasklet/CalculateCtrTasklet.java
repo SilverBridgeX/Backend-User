@@ -1,5 +1,6 @@
 package com.example.silverbridgeX_user.batch.tasklet;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
@@ -16,7 +17,7 @@ public class CalculateCtrTasklet implements Tasklet {
     private final JdbcTemplate jdbc;
 
     @Override
-    public RepeatStatus execute(StepContribution con, ChunkContext ctx) {
+    public RepeatStatus execute(@NonNull StepContribution con, @NonNull ChunkContext ctx) {
         String sql = """
                     UPDATE activity a SET
                       click_num = sub.click,

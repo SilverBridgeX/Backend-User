@@ -5,6 +5,7 @@ import com.example.silverbridgeX_user.user.domain.User;
 import com.example.silverbridgeX_user.user.repository.UserRepository;
 import com.example.silverbridgeX_user.user.service.UserService;
 import java.util.List;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
@@ -22,7 +23,7 @@ public class RequestUserEmbTasklet implements Tasklet {
     private final UserService userService;
 
     @Override
-    public RepeatStatus execute(StepContribution con, ChunkContext ctx) throws Exception {
+    public RepeatStatus execute(@NonNull StepContribution con, @NonNull ChunkContext ctx) throws Exception {
 
         // 사용자별 선호 키워드 업데이트
         userService.updatePreferredKeywords();
