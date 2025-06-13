@@ -27,6 +27,11 @@ neo4j:
     username: ${neo4j.authentication.username}
     password: ${neo4j.authentication.password}
 
+logging:
+  level:
+    org.springframework.batch: DEBUG
+    org.springframework.jdbc.datasource.init: DEBUG
+
 ---
 
 # local profile
@@ -39,6 +44,9 @@ spring:
     username: ${local.db.username}
     password: ${local.db.password}
     driver-class-name: org.postgresql.Driver
+  batch:
+    jdbc:
+      initialize-schema: always
   sql:
     init:
       mode: never

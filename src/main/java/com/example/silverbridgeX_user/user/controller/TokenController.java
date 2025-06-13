@@ -41,16 +41,16 @@ public class TokenController {
         String signIn = "wasUser";
 
         if (isMember) {
-            User user = userService.findByUserName(userReqDto.getUsername());
+            User user = userService.findByUserName(userReqDto.getEmail());
 
-            JwtDto jwt = userService.jwtMakeSave(userReqDto.getUsername());
+            JwtDto jwt = userService.jwtMakeSave(userReqDto.getEmail());
             accessToken = jwt.getAccessToken();
             refreshToken = jwt.getRefreshToken();
 
         } else {
             User newUser = userService.createUser(userReqDto);
 
-            JwtDto jwt = userService.jwtMakeSave(userReqDto.getUsername());
+            JwtDto jwt = userService.jwtMakeSave(userReqDto.getEmail());
             accessToken = jwt.getAccessToken();
             refreshToken = jwt.getRefreshToken();
 

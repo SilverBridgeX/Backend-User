@@ -1,5 +1,6 @@
 package com.example.silverbridgeX_user.RecommendActivity.domain;
 
+import com.example.silverbridgeX_user.activity.domain.Activity;
 import com.example.silverbridgeX_user.user.domain.User;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -34,6 +35,6 @@ public class RecommendActivity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "activity_id")
-    private User activity;
+    private Activity activity;
 
 }
