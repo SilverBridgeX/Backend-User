@@ -6,7 +6,6 @@ import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -45,6 +44,9 @@ public class RequestUserEmbTaskletTest {
     @Mock
     private ChunkContext chunkContext;
 
+    @Mock
+    private User user;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -53,7 +55,6 @@ public class RequestUserEmbTaskletTest {
     @Test
     void execute_successfully_updates_embeddings() throws Exception {
         // Given
-        User user = mock(User.class);
         when(user.getId()).thenReturn(1L);
         when(user.getPreferredKeywords()).thenReturn(List.of("문화", "자연"));
 
@@ -73,7 +74,6 @@ public class RequestUserEmbTaskletTest {
     @Test
     void execute_skips_user_with_no_keywords() throws Exception {
         // Given
-        User user = mock(User.class);
         when(user.getPreferredKeywords()).thenReturn(List.of());
 
         when(userRepository.findAll()).thenReturn(List.of(user));
@@ -89,7 +89,6 @@ public class RequestUserEmbTaskletTest {
     @Test
     void execute_handles_exception_during_embedding() throws Exception {
         // Given
-        User user = mock(User.class);
         when(user.getId()).thenReturn(99L);
         when(user.getPreferredKeywords()).thenReturn(List.of("키워드"));
 
