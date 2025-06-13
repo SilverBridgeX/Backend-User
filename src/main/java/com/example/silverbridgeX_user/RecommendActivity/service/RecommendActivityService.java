@@ -1,11 +1,11 @@
 package com.example.silverbridgeX_user.RecommendActivity.service;
 
 import com.example.silverbridgeX_user.RecommendActivity.converter.RecommendActivityConverter;
+import com.example.silverbridgeX_user.RecommendActivity.domain.ActivityLog;
 import com.example.silverbridgeX_user.RecommendActivity.domain.RecommendActivity;
 import com.example.silverbridgeX_user.RecommendActivity.repository.RecommendActivityRepository;
 import com.example.silverbridgeX_user.activity.converter.ActivityLogConverter;
 import com.example.silverbridgeX_user.activity.domain.Activity;
-import com.example.silverbridgeX_user.activity.domain.ActivityLog;
 import com.example.silverbridgeX_user.activity.repository.ActivityLogRepository;
 import com.example.silverbridgeX_user.activity.repository.ActivityRankingRepository;
 import com.example.silverbridgeX_user.activity.repository.ActivityRepository;
@@ -155,7 +155,7 @@ public class RecommendActivityService {
     public void generateAllUsersRecommendation() {
 
         // 0) 모든 사용자 조회 (PostgreSQL)
-        List<User> users = activityRepository.findAllUsers();   // → 필요 메서드 구현
+        List<User> users = activityRepository.findAllUsers();
 
         try (Session session = neo4jDriver.session()) {
 

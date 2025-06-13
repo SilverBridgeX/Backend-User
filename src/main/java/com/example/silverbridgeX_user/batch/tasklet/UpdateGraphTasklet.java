@@ -49,7 +49,7 @@ public class UpdateGraphTasklet implements Tasklet {
                             SELECT 1 FROM activity_log al
                             WHERE al.user_id = u.id
                               AND al.activity_id = a.id
-                              AND al.action_type = 1
+                              AND al.action_type = 'SELECT'
                         )
                     )
                     SELECT user_id, activity_id, score
@@ -69,8 +69,8 @@ public class UpdateGraphTasklet implements Tasklet {
                         u2.id  AS uid2,
                         1 - cosine_distance(u1.preferred_embedding,        u2.preferred_embedding       ) AS pref_sim,
                         1 - cosine_distance(u1.activity_embedding_avg,     u2.activity_embedding_avg    ) AS act_sim,
-                        (SELECT COUNT(*) FROM activity_log al WHERE al.user_id = u1.id AND al.action_type = 1) AS cnt1,
-                        (SELECT COUNT(*) FROM activity_log al WHERE al.user_id = u2.id AND al.action_type = 1) AS cnt2
+                        (SELECT COUNT(*) FROM activity_log al WHERE al.user_id = u1.id AND al.action_type = 'SELECT') AS cnt1,
+                        (SELECT COUNT(*) FROM activity_log al WHERE al.user_id = u2.id AND al.action_type = 'SELECT') AS cnt2
                       FROM member u1
                       JOIN member u2 ON u1.id < u2.id
                       WHERE u1.preferred_embedding    IS NOT NULL

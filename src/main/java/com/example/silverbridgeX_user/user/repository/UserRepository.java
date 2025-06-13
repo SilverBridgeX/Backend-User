@@ -41,7 +41,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
                        avg(a.description_embedding) AS avg_vec
                 FROM activity_log al
                 JOIN activity a ON al.activity_id = a.id
-                WHERE al.action_type = 1 AND a.description_embedding IS NOT NULL
+                WHERE al.action_type = 'SELECT' AND a.description_embedding IS NOT NULL
                 GROUP BY al.user_id
             ) sub
             WHERE u.id = sub.user_id

@@ -27,8 +27,8 @@ public class CalculateCtrTasklet implements Tasklet {
                                  ELSE 0 END
                     FROM (
                       SELECT activity_id,
-                             COUNT(*) FILTER (WHERE action_type = 1) AS click,
-                             COUNT(*) FILTER (WHERE action_type = 0) AS impression
+                             COUNT(*) FILTER (WHERE action_type = 'SELECT') AS click,
+                             COUNT(*) FILTER (WHERE action_type = 'VIEW') AS impression
                       FROM activity_log
                       GROUP BY activity_id
                     ) sub
