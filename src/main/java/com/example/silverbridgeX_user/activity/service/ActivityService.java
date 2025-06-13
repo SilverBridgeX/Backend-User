@@ -27,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.Session;
 import org.neo4j.driver.Values;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -196,7 +197,7 @@ public class ActivityService {
                 }
 
                 String json = activityApiService.getJsonFromUrl(urlStr);
-                System.out.println(json);
+                log.info(json);
                 JsonNode point = activityApiService.parsePoint(json);
 
                 if (!point.isMissingNode()) {
@@ -214,13 +215,14 @@ public class ActivityService {
 
     }
 
-    String key = "";
+    @Value("${geocoder.api.key}")
+    private String key;
 
     private String buildCoordinateUrl(String type, String address) throws Exception {
         StringBuilder urlBuilder = new StringBuilder(addressToCoordinateApiurl);
         urlBuilder.append("&key=" + key);
         urlBuilder.append("&type=" + type); // PARCEL : 지번주소, ROAD : 도로명주소
-        urlBuilder.append("&address=" + URLEncoder.encode("경상북도 영주시 봉현면 오현리 763-1", StandardCharsets.UTF_8));
+        urlBuilder.append("&address=" + URLEncoder.encode(address, StandardCharsets.UTF_8));
         return urlBuilder.toString();
     }
 
