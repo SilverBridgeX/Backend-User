@@ -2,6 +2,7 @@ package com.example.silverbridgeX_user.user.domain;
 
 import com.example.silverbridgeX_user.global.entity.BaseEntity;
 import com.example.silverbridgeX_user.matching.domain.MatchRequest;
+import com.example.silverbridgeX_user.payment.domain.Payment;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -55,6 +56,9 @@ public class User extends BaseEntity {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private MatchRequest matchRequest;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private Payment payment;
 
     @JdbcTypeCode(SqlTypes.JSON)
     private List<String> preferredKeywords;
