@@ -17,7 +17,7 @@ public class UserRequestDto {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class UserReqDto {
-        @Schema(description = "역할(OLDER/PROTECTOR)")
+        @Schema(description = "역할(OLDER/GUARDIAN)")
         private UserRole role;
 
         @Schema(description = "이메일")

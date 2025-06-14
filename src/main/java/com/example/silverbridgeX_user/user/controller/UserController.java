@@ -8,8 +8,8 @@ import com.example.silverbridgeX_user.user.dto.JwtDto;
 import com.example.silverbridgeX_user.user.dto.UserRequestDto;
 import com.example.silverbridgeX_user.user.dto.UserRequestDto.UserAddressReqDto;
 import com.example.silverbridgeX_user.user.dto.UserRequestDto.UserNicknameReqDto;
+import com.example.silverbridgeX_user.user.dto.UserResponseDto.GuardianMyPageResDto;
 import com.example.silverbridgeX_user.user.dto.UserResponseDto.OlderMyPageResDto;
-import com.example.silverbridgeX_user.user.dto.UserResponseDto.ProtectorMyPageResDto;
 import com.example.silverbridgeX_user.user.jwt.CustomUserDetails;
 import com.example.silverbridgeX_user.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -112,48 +112,48 @@ public class UserController {
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "USER_2006", description = "노인 마이페이지 정보 조회가 완료되었습니다.")
     })
-    @GetMapping(value = "/mypage/protector")
-    public ApiResponse<ProtectorMyPageResDto> mypageProtector(
+    @GetMapping(value = "/mypage/guardian")
+    public ApiResponse<GuardianMyPageResDto> mypageGuardian(
             @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
-        User protector = userService.findByUserName(customUserDetails.getUsername());
-        userService.validateProtector(protector);
-        List<User> olders = protector.getOlders();
+        User guardian = userService.findByUserName(customUserDetails.getUsername());
+        userService.validateGuardian(guardian);
+        List<User> olders = guardian.getOlders();
 
         return ApiResponse.onSuccess(SuccessCode.USER_MYPAGE_VIEW_SUCCESS,
-                UserConverter.protectorMyPageResDto(protector, olders));
+                UserConverter.guardianMyPageResDto(guardian, olders));
     }
 
     @Operation(summary = "보호자의 노인 연결", description = "보호자가 관리할 노인을 연결하는 메서드입니다.")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "USER_2007", description = "보호자의 노인 연결이 완료되었습니다.")
     })
-    @PostMapping(value = "/protectors/older-links")
+    @PostMapping(value = "/guardians/older-links")
     public ApiResponse<Boolean> assignOlder(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @RequestParam("olderKey") String olderKey
     ) {
-        User protector = userService.findByUserName(customUserDetails.getUsername());
-        userService.assignOlder(protector, olderKey);
+        User guardian = userService.findByUserName(customUserDetails.getUsername());
+        userService.assignOlder(guardian, olderKey);
 
-        return ApiResponse.onSuccess(SuccessCode.USER_PROTECTOR_CONNECT_OLDER_SUCCESS, true);
+        return ApiResponse.onSuccess(SuccessCode.USER_GUARDIAN_CONNECT_OLDER_SUCCESS, true);
     }
 
     @Operation(summary = "보호자의 노인 등록", description = "보호자가 관리할 노인을 등록하는 메서드입니다.")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "USER_2008", description = "보호자의 노인 등록이 완료되었습니다.")
     })
-    @PostMapping(value = "/protectors/olders")
+    @PostMapping(value = "/guardians/olders")
     public ApiResponse<String> registerOlder(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @RequestBody UserRequestDto.UserReqDto userReqDto
     ) throws Exception {
-        User protector = userService.findByUserName(customUserDetails.getUsername());
+        User guardian = userService.findByUserName(customUserDetails.getUsername());
 
         User older = userService.createUser(userReqDto);
-        String key = userService.registerOlder(protector, older);
+        String key = userService.registerOlder(guardian, older);
 
-        return ApiResponse.onSuccess(SuccessCode.USER_PROTECTOR_REGISTER_OLDER_SUCCESS, key);
+        return ApiResponse.onSuccess(SuccessCode.USER_GUARDIAN_REGISTER_OLDER_SUCCESS, key);
     }
 
 }

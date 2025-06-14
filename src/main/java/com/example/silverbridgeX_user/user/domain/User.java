@@ -16,6 +16,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
@@ -23,8 +24,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDate;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -53,10 +52,10 @@ public class User extends BaseEntity {
     private UserRole role;
 
     @ManyToOne
-    @JoinColumn(name = "protector_id")
-    private User protector;
+    @JoinColumn(name = "guardian_id")
+    private User guardian;
 
-    @OneToMany(mappedBy = "protector", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "guardian", cascade = CascadeType.ALL)
     private List<User> olders = new ArrayList<>();
 
     private String sex;
@@ -115,8 +114,8 @@ public class User extends BaseEntity {
         this.latitude = latitude;
     }
 
-    public void updateProtector(User protector) {
-        this.protector = protector; // null 가능
+    public void updateGuardian(User guardian) {
+        this.guardian = guardian; // null 가능
     }
 }
 

@@ -175,9 +175,9 @@ public class UserService {
             log.info("DB에서 리프레시 토큰 삭제 완료");
         }
 
-        if (user.getRole().equals(UserRole.PROTECTOR)) {
+        if (user.getRole().equals(UserRole.GUARDIAN)) {
             for (User older : user.getOlders()) {
-                older.updateProtector(null); // FK 끊기
+                older.updateGuardian(null); // FK 끊기
             }
         }
 
@@ -259,31 +259,31 @@ public class UserService {
         }
     }
 
-    public void validateProtector(User user) {
-        if (!user.getRole().equals(UserRole.PROTECTOR)) {
+    public void validateGuardian(User user) {
+        if (!user.getRole().equals(UserRole.GUARDIAN)) {
             log.info(String.valueOf(user.getRole()));
-            throw new GeneralException(ErrorCode.USER_NOT_PROTECTOR);
+            throw new GeneralException(ErrorCode.USER_NOT_GUARDIAN);
         }
     }
 
     @Transactional
-    public void assignOlder(User protector, String key) {
+    public void assignOlder(User guardian, String key) {
         User older = userRepository.findByUsername(key)
                 .orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND_BY_USERNAME));
 
-        validateProtector(protector);
+        validateGuardian(guardian);
         validateOlder(older);
 
-        older.updateProtector(protector);
+        older.updateGuardian(guardian);
         userRepository.save(older);
     }
 
     @Transactional
-    public String registerOlder(User protector, User older) {
-        validateProtector(protector);
+    public String registerOlder(User guardian, User older) {
+        validateGuardian(guardian);
         validateOlder(older);
 
-        older.updateProtector(protector);
+        older.updateGuardian(guardian);
         userRepository.save(older);
         return older.getUsername();
     }
