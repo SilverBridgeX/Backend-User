@@ -31,13 +31,13 @@ public class UserResponseDto {
         private String email;
     }
 
-    @Schema(description = "ProtectorMyPageResDto")
+    @Schema(description = "GuardianMyPageResDto")
     @Getter
     @Setter
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class ProtectorMyPageResDto {
+    public static class GuardianMyPageResDto {
         @Schema(description = "닉네임")
         private String nickname;
 

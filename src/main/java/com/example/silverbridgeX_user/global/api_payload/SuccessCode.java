@@ -21,8 +21,8 @@ public enum SuccessCode implements BaseCode {
     USER_NICKNAME_UPDATE_SUCCESS(HttpStatus.OK, "USER_2004", "닉네임 수정이 완료되었습니다."),
     USER_ADDRESS_UPDATE_SUCCESS(HttpStatus.OK, "USER_2005", "주소지 수정이 완료되었습니다."),
     USER_MYPAGE_VIEW_SUCCESS(HttpStatus.OK, "USER_2006", "마이페이지 정보 조회가 완료되었습니다."),
-    USER_PROTECTOR_CONNECT_OLDER_SUCCESS(HttpStatus.OK, "USER_2007", "보호자의 노인 연결이 완료되었습니다."),
-    USER_PROTECTOR_REGISTER_OLDER_SUCCESS(HttpStatus.OK, "USER_2008", "보호자의 노인 등록이 완료되었습니다."),
+    USER_GUARDIAN_CONNECT_OLDER_SUCCESS(HttpStatus.OK, "USER_2007", "보호자의 노인 연결이 완료되었습니다."),
+    USER_GUARDIAN_REGISTER_OLDER_SUCCESS(HttpStatus.OK, "USER_2008", "보호자의 노인 등록이 완료되었습니다."),
 
     // Recommend Activity
     RECOMMEND_ACTIVITY_VIEW_LIST_SUCCESS(HttpStatus.OK, "ACTIVITY_2001", "추천하는 활동 리스를 반환 완료했습니다."),
