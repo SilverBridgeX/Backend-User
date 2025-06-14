@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -115,10 +116,12 @@ public class UserController {
     public ApiResponse<ProtectorMyPageResDto> mypageProtector(
             @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
-        User user = userService.findByUserName(customUserDetails.getUsername());
-        userService.validateProtector(user);
+        User protector = userService.findByUserName(customUserDetails.getUsername());
+        userService.validateProtector(protector);
+        List<User> olders = protector.getOlders();
 
-        return ApiResponse.onSuccess(SuccessCode.USER_MYPAGE_VIEW_SUCCESS, UserConverter.protectorMyPageResDto(user));
+        return ApiResponse.onSuccess(SuccessCode.USER_MYPAGE_VIEW_SUCCESS,
+                UserConverter.protectorMyPageResDto(protector, olders));
     }
 
     @Operation(summary = "보호자의 노인 연결", description = "보호자가 관리할 노인을 연결하는 메서드입니다.")

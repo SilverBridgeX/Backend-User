@@ -3,8 +3,10 @@ package com.example.silverbridgeX_user.user.converter;
 import com.example.silverbridgeX_user.user.domain.User;
 import com.example.silverbridgeX_user.user.dto.JwtDto;
 import com.example.silverbridgeX_user.user.dto.UserRequestDto;
+import com.example.silverbridgeX_user.user.dto.UserResponseDto.OlderInfoDto;
 import com.example.silverbridgeX_user.user.dto.UserResponseDto.OlderMyPageResDto;
 import com.example.silverbridgeX_user.user.dto.UserResponseDto.ProtectorMyPageResDto;
+import java.util.List;
 
 public class UserConverter {
     public static User saveUser(UserRequestDto.UserReqDto userReqDto, String key) {
@@ -35,14 +37,21 @@ public class UserConverter {
                 .build();
     }
 
-    public static ProtectorMyPageResDto protectorMyPageResDto(User user) {
+    public static ProtectorMyPageResDto protectorMyPageResDto(User user, List<User> olders) {
+        List<OlderInfoDto> olderInfoDtos = olders.stream()
+                .map(older -> OlderInfoDto.builder()
+                        .nickname(older.getNickname())
+                        .key(older.getUsername())
+                        .build())
+                .toList();
+
         return ProtectorMyPageResDto.builder()
                 .key(user.getUsername())
                 .nickname(user.getNickname())
                 .address(user.getStreetAddress())
                 .email(user.getEmail())
+                .olderInfoDtos(olderInfoDtos)
                 .build();
     }
-
-
+    
 }
