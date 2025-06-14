@@ -36,6 +36,19 @@ public class PaymentController {
         return ApiResponse.onSuccess(SuccessCode.PAYMENT_URL_CREATE_SUCCESS, kakaoReadyResponse);
     }
 
+    @PostMapping("/ready/key")
+    @Operation(summary = "카카오페이 URL 생성 API", description = "key를 이용하여 카카오페이 URL을 생성하는 API 입니다.")
+    public ApiResponse<PaymentDto.KakaoReadyResponse> readyToKakaoPay(@RequestParam("pg_token") String key) {
+        PaymentDto.KakaoReadyResponse kakaoReadyResponse = paymentService.kakaoPayReady();
+
+        User user = userService.findByUserName(key);
+        Long userId = user.getId();
+
+        paymentService.saveTid(userId, kakaoReadyResponse.getTid());
+
+        return ApiResponse.onSuccess(SuccessCode.PAYMENT_URL_CREATE_SUCCESS, kakaoReadyResponse);
+    }
+
     @GetMapping("/success")
     public ModelAndView afterPayRequest(@RequestParam("pg_token") String pgToken) {
         PaymentDto.KakaoApproveResponse kakaoApproveResponse = paymentService.approveResponse(pgToken);
