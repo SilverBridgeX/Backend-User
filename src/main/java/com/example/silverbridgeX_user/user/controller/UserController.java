@@ -35,6 +35,64 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
     private final UserService userService;
 
+    @Operation(summary = "소셜 회원가입", description = "프론트에게 유저 정보 받아 소셜 회원가입 후, 토큰 반환하는 메서드입니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "USER_2011", description = "소셜 회원가입 성공"),
+    })
+    @PostMapping("/social/sign-in")
+    public ApiResponse<JwtDto> socialSignIn(
+            @RequestBody UserRequestDto.UserSigInReqDto userReqDto
+    ) throws Exception {
+        userService.validateNewUser(userReqDto.getEmail());
+
+        User user = userService.createUser(userReqDto);
+
+        JwtDto jwt = userService.jwtMakeSave(user.getUsername());
+        String accessToken = jwt.getAccessToken();
+        String refreshToken = jwt.getRefreshToken();
+
+        return ApiResponse.onSuccess(SuccessCode.USER_SOCIAL_SIGNIN_SUCCESS,
+                UserConverter.jwtDto(accessToken, refreshToken, user.getUsername()));
+    }
+
+    @Operation(summary = "소셜 로그인", description = "프론트에게 유저 정보 받아 소셜 회원가입 후, 토큰 반환하는 메서드입니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "USER_2012", description = "소셜 로그인 성공"),
+    })
+    @PostMapping("/social/login")
+    public ApiResponse<JwtDto> socialLogin(
+            @RequestBody UserRequestDto.UserLoginReqDto userReqDto
+    ) {
+        userService.validateOldUser(userReqDto);
+
+        User user = userService.findByEmail(userReqDto.getEmail());
+
+        JwtDto jwt = userService.jwtMakeSave(user.getUsername());
+        String accessToken = jwt.getAccessToken();
+        String refreshToken = jwt.getRefreshToken();
+
+        return ApiResponse.onSuccess(SuccessCode.USER_SOCIAL_LOGIN_SUCCESS,
+                UserConverter.jwtDto(accessToken, refreshToken, user.getUsername()));
+    }
+
+    @Operation(summary = "key 로그인", description = "노인의 key 로그인 후, 프론트에게 유저 정보 받아 토큰 반환하는 메서드입니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "USER_2013", description = "회원가입 & 로그인 성공"),
+    })
+    @PostMapping("/key/login")
+    public ApiResponse<JwtDto> keyLogin(
+            @RequestParam String key
+    ) {
+        User user = userService.findByUserName(key);
+
+        JwtDto jwt = userService.jwtMakeSave(user.getUsername());
+        String accessToken = jwt.getAccessToken();
+        String refreshToken = jwt.getRefreshToken();
+
+        return ApiResponse.onSuccess(SuccessCode.USER_KEY_LOGIN_SUCCESS,
+                UserConverter.jwtDto(accessToken, refreshToken, "wasUser"));
+    }
+
     @Operation(summary = "로그아웃", description = "로그아웃하는 메서드입니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "USER_2001", description = "로그아웃 되었습니다."),
@@ -146,7 +204,7 @@ public class UserController {
     @PostMapping(value = "/guardians/olders")
     public ApiResponse<String> registerOlder(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
-            @RequestBody UserRequestDto.UserReqDto userReqDto
+            @RequestBody UserRequestDto.UserSigInReqDto userReqDto
     ) throws Exception {
         User guardian = userService.findByUserName(customUserDetails.getUsername());
 
