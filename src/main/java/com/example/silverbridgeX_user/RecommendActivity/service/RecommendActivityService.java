@@ -191,7 +191,7 @@ public class RecommendActivityService {
 
                 /* ---------- 2. 인기 랭킹 + 거리 필터 ---------- */
                 List<Long> popularIds = activityRankingRepository.fetchTopByDistance(
-                        Float.parseFloat(user.getLatitude()), Float.parseFloat(user.getLongitude()), 18, resultIds);
+                    (float)(double) user.getLatitude(), (float)(double) user.getLongitude(), 18, resultIds);
 
                 for (Long id : popularIds) {
                     if (resultIds.size() >= 18) {
