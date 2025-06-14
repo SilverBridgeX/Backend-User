@@ -11,12 +11,12 @@ import lombok.Setter;
 
 @NoArgsConstructor
 public class UserRequestDto {
-    @Schema(description = "UserReqDto")
+    @Schema(description = "UserSigInReqDto")
     @Getter
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class UserReqDto {
+    public static class UserSigInReqDto {
         @Schema(description = "역할(OLDER/GUARDIAN)")
         private UserRole role;
 
@@ -29,6 +29,19 @@ public class UserRequestDto {
         @Schema(description = "도로명 주소")
         private String streetAddress;
 
+    }
+
+    @Schema(description = "UserLoginReqDto")
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class UserLoginReqDto {
+        @Schema(description = "역할(OLDER/GUARDIAN)")
+        private UserRole role;
+
+        @Schema(description = "이메일")
+        private String email;
     }
 
     @Schema(description = "UserNicknameReqDto")

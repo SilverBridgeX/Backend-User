@@ -9,7 +9,7 @@ import com.example.silverbridgeX_user.user.dto.UserResponseDto.OlderMyPageResDto
 import java.util.List;
 
 public class UserConverter {
-    public static User saveUser(UserRequestDto.UserReqDto userReqDto, String key) {
+    public static User saveUser(UserRequestDto.UserSigInReqDto userReqDto, String key) {
 
         return User.builder()
                 .role(userReqDto.getRole())

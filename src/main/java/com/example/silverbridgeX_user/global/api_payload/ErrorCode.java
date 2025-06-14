@@ -14,10 +14,12 @@ public enum ErrorCode implements BaseCode {
 
     // User
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_4041", "존재하지 않는 회원입니다."),
-    USER_NOT_FOUND_BY_EMAIL(HttpStatus.NOT_FOUND, "USER_4042", "존재하지 않는 회원입니다.-EMAIL"),
-    USER_NOT_FOUND_BY_USERNAME(HttpStatus.NOT_FOUND, "USER_4043", "존재하지 않는 회원입니다.-USERNAME & KEY"),
+    USER_NOT_FOUND_BY_EMAIL(HttpStatus.NOT_FOUND, "USER_4042", "해당 email을 가진 회원이 없습니다."),
+    USER_NOT_FOUND_BY_USERNAME(HttpStatus.NOT_FOUND, "USER_4043", "해당 key를 가진 회원이 없습니다."),
     USER_NOT_OLDER(HttpStatus.FORBIDDEN, "USER_4031", "해당 유저가 노인이 아니랍니다."),
     USER_NOT_GUARDIAN(HttpStatus.FORBIDDEN, "USER_4032", "해당 유저가 보호자가 아닙니다."),
+    USER_ROLE_DIFFERENT(HttpStatus.FORBIDDEN, "USER_4033", "해당 유저의 role이 틀립니다."),
+    USER_ALREADY_MEMBER(HttpStatus.CONFLICT, "USER_4091", "이미 회원가입된 유저입니다."),
 
     // Jwt
     WRONG_REFRESH_TOKEN(HttpStatus.NOT_FOUND, "JWT_4041", "일치하는 리프레시 토큰이 없습니다."),

@@ -12,7 +12,7 @@ import com.example.silverbridgeX_user.user.domain.UserRole;
 import com.example.silverbridgeX_user.user.dto.JwtDto;
 import com.example.silverbridgeX_user.user.dto.UserRequestDto;
 import com.example.silverbridgeX_user.user.dto.UserRequestDto.UserPreferenceDto;
-import com.example.silverbridgeX_user.user.dto.UserRequestDto.UserReqDto;
+import com.example.silverbridgeX_user.user.dto.UserRequestDto.UserSigInReqDto;
 import com.example.silverbridgeX_user.user.jwt.JwtTokenUtils;
 import com.example.silverbridgeX_user.user.repository.RefreshTokenRepository;
 import com.example.silverbridgeX_user.user.repository.UserRepository;
@@ -72,7 +72,24 @@ public class UserService {
     }
 
     @Transactional
-    public User createUser(UserReqDto userReqDto) throws Exception {
+    public void validateNewUser(String email) {
+        if (userRepository.existsByEmail(email)) {
+            throw new GeneralException(ErrorCode.USER_ALREADY_MEMBER);
+        }
+    }
+
+    @Transactional
+    public void validateOldUser(UserRequestDto.UserLoginReqDto userReqDto) {
+        User older = userRepository.findByEmail(userReqDto.getEmail())
+                .orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND_BY_EMAIL));
+
+        if (userReqDto.getRole() != older.getRole()) {
+            throw new GeneralException(ErrorCode.USER_ROLE_DIFFERENT);
+        }
+    }
+
+    @Transactional
+    public User createUser(UserSigInReqDto userReqDto) throws Exception {
 
         String uniqueKey;
         do {
