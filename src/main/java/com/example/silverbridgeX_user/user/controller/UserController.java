@@ -57,7 +57,7 @@ public class UserController {
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "USER_2003", description = "회원탈퇴가 완료되었습니다."),
     })
-    @DeleteMapping("/delete")
+    @DeleteMapping("/me")
     public ApiResponse<String> deleteUser(Authentication auth) {
         userService.deleteUser(auth.getName());
         return ApiResponse.onSuccess(SuccessCode.USER_DELETE_SUCCESS, "user entity 삭제 완료");
@@ -67,7 +67,7 @@ public class UserController {
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "USER_2004", description = "닉네임 변경이 완료되었습니다.")
     })
-    @PostMapping(value = "/nickname/update")
+    @PostMapping(value = "/nickname")
     public ApiResponse<Boolean> nickname(
             @RequestBody UserNicknameReqDto nicknameReqDto,
             @AuthenticationPrincipal CustomUserDetails customUserDetails
@@ -81,7 +81,7 @@ public class UserController {
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "USER_2005", description = "주소지 변경이 완료되었습니다.")
     })
-    @PostMapping(value = "/address/update")
+    @PostMapping(value = "/address")
     public ApiResponse<Boolean> address(
             @RequestBody UserAddressReqDto addressReqDto,
             @AuthenticationPrincipal CustomUserDetails customUserDetails
