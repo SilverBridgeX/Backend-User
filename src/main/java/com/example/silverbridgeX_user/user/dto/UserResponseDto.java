@@ -1,6 +1,7 @@
 package com.example.silverbridgeX_user.user.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -48,6 +49,23 @@ public class UserResponseDto {
 
         @Schema(description = "email")
         private String email;
+
+        @Schema(description = "olders")
+        private List<OlderInfoDto> olderInfoDtos;
+    }
+
+    @Schema(description = "OlderInfoDto")
+    @Getter
+    @Setter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class OlderInfoDto {
+        @Schema(description = "닉네임")
+        private String nickname;
+
+        @Schema(description = "key")
+        private String key;
     }
 
 }
