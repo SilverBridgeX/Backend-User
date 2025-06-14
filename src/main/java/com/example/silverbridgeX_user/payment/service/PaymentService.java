@@ -60,9 +60,9 @@ public class PaymentService {
         parameters.put("total_amount", "9900");
         parameters.put("vat_amount", "200");
         parameters.put("tax_free_amount", "0");
-        parameters.put("approval_url", "http://localhost:8080/payment/success"); // http://15.165.17.95/user/payment/success http://localhost:8080/payment/success
-        parameters.put("fail_url", "http://localhost:8080/payment/fail"); // http://15.165.17.95/user/payment/fail http://localhost:8080/payment/fail
-        parameters.put("cancel_url", "http://localhost:8080/payment/cancel"); // http://15.165.17.95/user/payment/cancel http://localhost:8080/payment/cancel
+        parameters.put("approval_url", "http://15.165.17.95/user/payment/success"); // http://15.165.17.95/user/payment/success http://localhost:8080/payment/success
+        parameters.put("fail_url", "http://15.165.17.95/user/payment/fail"); // http://15.165.17.95/user/payment/fail http://localhost:8080/payment/fail
+        parameters.put("cancel_url", "http://15.165.17.95/user/payment/cancel"); // http://15.165.17.95/user/payment/cancel http://localhost:8080/payment/cancel
 
 
         HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(parameters, this.getHeaders());
