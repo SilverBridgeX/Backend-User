@@ -37,22 +37,41 @@ public class AdjacencyGraphBuilder {
 //        String sexB = B.getSex();
 //
 //        if (sexA == null || sexB == null) return false;
-
-        Double latA = A.getLatitude();
-        Double lonA = A.getLongitude();
-        Double latB = B.getLatitude();
-        Double lonB = B.getLongitude();
-
-        if (latA == null || lonA == null || latB == null || lonB == null) return false;
-
+//
+//        Double latA = Double.parseDouble(A.getLatitude());
+//        Double lonA = Double.parseDouble(A.getLongitude());
+//        Double latB = Double.parseDouble(B.getLatitude());
+//        Double lonB = Double.parseDouble(B.getLongitude());
+//
+//        if (latA == null || lonA == null || latB == null || lonB == null) return false;
+//
 //        LocalDate birthA = A.getBirth();
 //        LocalDate birthB = B.getBirth();
 //
 //        if (birthA == null || birthB == null) return false;
-
+//
 //        return !sexA.equals(sexB) &&
 //                GeoUtils.haversine(latA, lonA, latB, lonB) <= 3.0 &&
 //                Math.abs(birthA.getYear() - birthB.getYear()) <= 10;
-        return GeoUtils.haversine(latA, lonA, latB, lonB) <= 3.0;
+
+        String latAStr = A.getLatitude();
+        String lonAStr = A.getLongitude();
+        String latBStr = B.getLatitude();
+        String lonBStr = B.getLongitude();
+
+        if (latAStr == null || lonAStr == null || latBStr == null || lonBStr == null) {
+            return false;
+        }
+
+        try {
+            double latA = Double.parseDouble(latAStr);
+            double lonA = Double.parseDouble(lonAStr);
+            double latB = Double.parseDouble(latBStr);
+            double lonB = Double.parseDouble(lonBStr);
+
+            return GeoUtils.haversine(latA, lonA, latB, lonB) <= 3.0;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 }

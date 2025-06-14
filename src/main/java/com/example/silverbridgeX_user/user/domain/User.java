@@ -47,9 +47,9 @@ public class User extends BaseEntity {
 
     private String streetAddress;
 
-    private Double latitude;
+    private String latitude;
 
-    private Double longitude;
+    private String longitude;
 
     private String profileImage;
 
