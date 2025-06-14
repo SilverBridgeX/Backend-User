@@ -125,13 +125,13 @@ public class UserController {
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "USER_2007", description = "보호자의 노인 연결이 완료되었습니다.")
     })
-    @PostMapping(value = "/connection")
-    public ApiResponse<Boolean> connectOlder(
+    @PostMapping(value = "/protectors/older-links")
+    public ApiResponse<Boolean> assignOlder(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @RequestParam("olderKey") String olderKey
     ) {
         User protector = userService.findByUserName(customUserDetails.getUsername());
-        userService.connectOlder(protector, olderKey);
+        userService.assignOlder(protector, olderKey);
 
         return ApiResponse.onSuccess(SuccessCode.USER_PROTECTOR_CONNECT_OLDER_SUCCESS, true);
     }
@@ -140,7 +140,7 @@ public class UserController {
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "USER_2008", description = "보호자의 노인 등록이 완료되었습니다.")
     })
-    @PostMapping(value = "/register")
+    @PostMapping(value = "/protectors/olders")
     public ApiResponse<Boolean> registerOlder(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @RequestBody UserRequestDto.UserReqDto userReqDto

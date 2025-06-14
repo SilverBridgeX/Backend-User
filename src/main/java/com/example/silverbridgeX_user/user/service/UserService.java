@@ -267,7 +267,7 @@ public class UserService {
     }
 
     @Transactional
-    public void connectOlder(User protector, String key) {
+    public void assignOlder(User protector, String key) {
         User older = userRepository.findByUsername(key)
                 .orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND_BY_USERNAME));
 
