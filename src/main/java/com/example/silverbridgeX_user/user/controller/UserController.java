@@ -141,16 +141,16 @@ public class UserController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "USER_2008", description = "보호자의 노인 등록이 완료되었습니다.")
     })
     @PostMapping(value = "/protectors/olders")
-    public ApiResponse<Boolean> registerOlder(
+    public ApiResponse<String> registerOlder(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @RequestBody UserRequestDto.UserReqDto userReqDto
     ) throws Exception {
         User protector = userService.findByUserName(customUserDetails.getUsername());
 
         User older = userService.createUser(userReqDto);
-        userService.registerOlder(protector, older);
+        String key = userService.registerOlder(protector, older);
 
-        return ApiResponse.onSuccess(SuccessCode.USER_PROTECTOR_REGISTER_OLDER_SUCCESS, true);
+        return ApiResponse.onSuccess(SuccessCode.USER_PROTECTOR_REGISTER_OLDER_SUCCESS, key);
     }
 
 }

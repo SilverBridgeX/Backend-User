@@ -279,12 +279,13 @@ public class UserService {
     }
 
     @Transactional
-    public void registerOlder(User protector, User older) {
+    public String registerOlder(User protector, User older) {
         validateProtector(protector);
         validateOlder(older);
 
         older.updateProtector(protector);
         userRepository.save(older);
+        return older.getUsername();
     }
 
 }
