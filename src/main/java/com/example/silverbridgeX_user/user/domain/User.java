@@ -10,8 +10,12 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -44,6 +48,13 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private UserRole role;
+
+    @ManyToOne
+    @JoinColumn(name = "protector_id")
+    private User protector;
+
+    @OneToMany(mappedBy = "protector", cascade = CascadeType.ALL)
+    private List<User> olders = new ArrayList<>();
 
     private String sex;
 
@@ -96,6 +107,10 @@ public class User extends BaseEntity {
     public void updateCoordinate(String longitude, String latitude) {
         this.longitude = longitude;
         this.latitude = latitude;
+    }
+
+    public void updateProtector(User protector) {
+        this.protector = protector; // null 가능
     }
 }
 

@@ -3,7 +3,6 @@ package com.example.silverbridgeX_user.user.service;
 import com.example.silverbridgeX_user.global.api_payload.ErrorCode;
 import com.example.silverbridgeX_user.global.dto.CoordinateDto;
 import com.example.silverbridgeX_user.global.exception.GeneralException;
-import com.example.silverbridgeX_user.global.service.ApiService;
 import com.example.silverbridgeX_user.global.service.CoordinateService;
 import com.example.silverbridgeX_user.global.util.UUID;
 import com.example.silverbridgeX_user.user.converter.UserConverter;
@@ -43,17 +42,12 @@ public class UserService {
     private final CoordinateService coordinateService;
     private final JwtTokenUtils jwtTokenUtils;
     private final RestTemplate restTemplate;
-    private final ApiService apiService;
     private final Driver driver;
 
     @Value("${chat.server.url}")
     private String chatServerUrl;
 
-    @Value("${geocoder.api.key}")
-    private String key;
     private String PREF_URL;
-    public String addressToCoordinateApiUrl = "https://api.vworld.kr/req/address?service=address&format=json&request=getCoord&refine=false";
-
 
     @PostConstruct
     public void init() {
@@ -180,6 +174,13 @@ public class UserService {
             refreshTokenRepository.deleteByUsername(username);
             log.info("DB에서 리프레시 토큰 삭제 완료");
         }
+
+        if (user.getRole().equals(UserRole.PROTECTOR)) {
+            for (User older : user.getOlders()) {
+                older.updateProtector(null); // FK 끊기
+            }
+        }
+
         userRepository.delete(user);
         log.info("{} 회원 탈퇴 완료", username);
     }
@@ -228,6 +229,7 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional
     public void updatePreferredKeywords() {
         ResponseEntity<UserPreferenceDto[]> response
                 = restTemplate.getForEntity(PREF_URL, UserPreferenceDto[].class);
@@ -263,4 +265,26 @@ public class UserService {
             throw new GeneralException(ErrorCode.USER_NOT_PROTECTOR);
         }
     }
+
+    @Transactional
+    public void connectOlder(User protector, String key) {
+        User older = userRepository.findByUsername(key)
+                .orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND_BY_USERNAME));
+
+        validateProtector(protector);
+        validateOlder(older);
+
+        older.updateProtector(protector);
+        userRepository.save(older);
+    }
+
+    @Transactional
+    public void registerOlder(User protector, User older) {
+        validateProtector(protector);
+        validateOlder(older);
+
+        older.updateProtector(protector);
+        userRepository.save(older);
+    }
+
 }

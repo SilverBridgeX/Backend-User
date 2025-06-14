@@ -5,6 +5,7 @@ import com.example.silverbridgeX_user.global.api_payload.SuccessCode;
 import com.example.silverbridgeX_user.user.converter.UserConverter;
 import com.example.silverbridgeX_user.user.domain.User;
 import com.example.silverbridgeX_user.user.dto.JwtDto;
+import com.example.silverbridgeX_user.user.dto.UserRequestDto;
 import com.example.silverbridgeX_user.user.dto.UserRequestDto.UserAddressReqDto;
 import com.example.silverbridgeX_user.user.dto.UserRequestDto.UserNicknameReqDto;
 import com.example.silverbridgeX_user.user.dto.UserResponseDto.OlderMyPageResDto;
@@ -19,9 +20,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "회원", description = "회원 관련 api 입니다.")
@@ -95,7 +98,7 @@ public class UserController {
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "USER_2006", description = "노인 마이페이지 정보 조회가 완료되었습니다.")
     })
-    @PostMapping(value = "/mypage/older")
+    @GetMapping(value = "/mypage/older")
     public ApiResponse<OlderMyPageResDto> mypageOlder(
             @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
@@ -108,7 +111,7 @@ public class UserController {
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "USER_2006", description = "노인 마이페이지 정보 조회가 완료되었습니다.")
     })
-    @PostMapping(value = "/mypage/protector")
+    @GetMapping(value = "/mypage/protector")
     public ApiResponse<ProtectorMyPageResDto> mypageProtector(
             @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
@@ -116,6 +119,38 @@ public class UserController {
         userService.validateProtector(user);
 
         return ApiResponse.onSuccess(SuccessCode.USER_MYPAGE_VIEW_SUCCESS, UserConverter.protectorMyPageResDto(user));
+    }
+
+    @Operation(summary = "보호자의 노인 연결", description = "보호자가 관리할 노인을 연결하는 메서드입니다.")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "USER_2007", description = "보호자의 노인 연결이 완료되었습니다.")
+    })
+    @PostMapping(value = "/connection")
+    public ApiResponse<Boolean> connectOlder(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @RequestParam("olderKey") String olderKey
+    ) {
+        User protector = userService.findByUserName(customUserDetails.getUsername());
+        userService.connectOlder(protector, olderKey);
+
+        return ApiResponse.onSuccess(SuccessCode.USER_PROTECTOR_CONNECT_OLDER_SUCCESS, true);
+    }
+
+    @Operation(summary = "보호자의 노인 등록", description = "보호자가 관리할 노인을 등록하는 메서드입니다.")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "USER_2008", description = "보호자의 노인 등록이 완료되었습니다.")
+    })
+    @PostMapping(value = "/register")
+    public ApiResponse<Boolean> registerOlder(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @RequestBody UserRequestDto.UserReqDto userReqDto
+    ) throws Exception {
+        User protector = userService.findByUserName(customUserDetails.getUsername());
+
+        User older = userService.createUser(userReqDto);
+        userService.registerOlder(protector, older);
+
+        return ApiResponse.onSuccess(SuccessCode.USER_PROTECTOR_REGISTER_OLDER_SUCCESS, true);
     }
 
 }

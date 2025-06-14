@@ -9,12 +9,14 @@ import com.example.silverbridgeX_user.global.exception.GeneralException;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
-@NoArgsConstructor(force = true)
+@RequiredArgsConstructor
 public class CoordinateService {
     private final ActivityRepository activityRepository;
     private final ApiService apiService;
