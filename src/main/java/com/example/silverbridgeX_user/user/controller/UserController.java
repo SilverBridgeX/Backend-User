@@ -2,9 +2,13 @@ package com.example.silverbridgeX_user.user.controller;
 
 import com.example.silverbridgeX_user.global.api_payload.ApiResponse;
 import com.example.silverbridgeX_user.global.api_payload.SuccessCode;
+import com.example.silverbridgeX_user.user.converter.UserConverter;
 import com.example.silverbridgeX_user.user.domain.User;
 import com.example.silverbridgeX_user.user.dto.JwtDto;
+import com.example.silverbridgeX_user.user.dto.UserRequestDto.UserAddressReqDto;
 import com.example.silverbridgeX_user.user.dto.UserRequestDto.UserNicknameReqDto;
+import com.example.silverbridgeX_user.user.dto.UserResponseDto.OlderMyPageResDto;
+import com.example.silverbridgeX_user.user.dto.UserResponseDto.ProtectorMyPageResDto;
 import com.example.silverbridgeX_user.user.jwt.CustomUserDetails;
 import com.example.silverbridgeX_user.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -59,9 +63,9 @@ public class UserController {
         return ApiResponse.onSuccess(SuccessCode.USER_DELETE_SUCCESS, "user entity 삭제 완료");
     }
 
-    @Operation(summary = "닉네임 입력, 수정", description = "중복 안되는 닉네임을 입력받는 메서드입니다.")
+    @Operation(summary = "닉네임 수정", description = "닉네임을 변경하는 메서드입니다.")
     @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "USER_2004", description = "닉네임 생성이 완료되었습니다.")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "USER_2004", description = "닉네임 변경이 완료되었습니다.")
     })
     @PostMapping(value = "/nickname/update")
     public ApiResponse<Boolean> nickname(
@@ -70,6 +74,48 @@ public class UserController {
     ) {
         User user = userService.findByUserName(customUserDetails.getUsername());
         userService.saveNickname(nicknameReqDto, user);
-        return ApiResponse.onSuccess(SuccessCode.USER_NICKNAME_SUCCESS, true);
+        return ApiResponse.onSuccess(SuccessCode.USER_NICKNAME_UPDATE_SUCCESS, true);
     }
+
+    @Operation(summary = "주소 수정", description = "주소를 변경하는 메서드입니다.")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "USER_2005", description = "주소지 변경이 완료되었습니다.")
+    })
+    @PostMapping(value = "/address/update")
+    public ApiResponse<Boolean> address(
+            @RequestBody UserAddressReqDto addressReqDto,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails
+    ) throws Exception {
+        User user = userService.findByUserName(customUserDetails.getUsername());
+        userService.saveAddress(addressReqDto, user);
+        return ApiResponse.onSuccess(SuccessCode.USER_ADDRESS_UPDATE_SUCCESS, true);
+    }
+
+    @Operation(summary = "노인 마이페이지 조회", description = "노인 마이페이지를 조회하는 메서드입니다.")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "USER_2006", description = "노인 마이페이지 정보 조회가 완료되었습니다.")
+    })
+    @PostMapping(value = "/mypage/older")
+    public ApiResponse<OlderMyPageResDto> mypageOlder(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails
+    ) {
+        User user = userService.findByUserName(customUserDetails.getUsername());
+        userService.validateOlder(user);
+        return ApiResponse.onSuccess(SuccessCode.USER_MYPAGE_VIEW_SUCCESS, UserConverter.olderMyPageResDto(user));
+    }
+
+    @Operation(summary = "보호자 마이페이지 조회", description = "보호자 마이페이지를 조회하는 메서드입니다.")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "USER_2006", description = "노인 마이페이지 정보 조회가 완료되었습니다.")
+    })
+    @PostMapping(value = "/mypage/protector")
+    public ApiResponse<ProtectorMyPageResDto> mypageProtector(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails
+    ) {
+        User user = userService.findByUserName(customUserDetails.getUsername());
+        userService.validateProtector(user);
+
+        return ApiResponse.onSuccess(SuccessCode.USER_MYPAGE_VIEW_SUCCESS, UserConverter.protectorMyPageResDto(user));
+    }
+
 }

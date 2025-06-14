@@ -85,6 +85,10 @@ public class User extends BaseEntity {
         this.nickname = nickname;
     }
 
+    public void updateAddress(String address) {
+        this.streetAddress = address;
+    }
+
     public void updatePreferredKeywords(List<String> keywords) {
         this.preferredKeywords = keywords;
     }

@@ -3,7 +3,10 @@ package com.example.silverbridgeX_user.global.service;
 import com.example.silverbridgeX_user.activity.domain.Activity;
 import com.example.silverbridgeX_user.activity.repository.ActivityRepository;
 import com.example.silverbridgeX_user.global.api_payload.ErrorCode;
+import com.example.silverbridgeX_user.global.converter.CoordinateConverter;
+import com.example.silverbridgeX_user.global.dto.CoordinateDto;
 import com.example.silverbridgeX_user.global.exception.GeneralException;
+import com.fasterxml.jackson.databind.JsonNode;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import lombok.NoArgsConstructor;
@@ -20,6 +23,20 @@ public class CoordinateService {
 
     @Value("${geocoder.api.key}")
     private String key;
+
+    public CoordinateDto.simpleCoordinateDto getCoordinateByAddress(String type, String address) throws Exception {
+        String urlStr = buildCoordinateUrl(type, address);
+        assert apiService != null;
+        String json = apiService.getJsonFromUrl(urlStr);
+        JsonNode point = apiService.parsePoint(json);
+
+        String x = String.valueOf(point.get("x"));
+        String y = String.valueOf(point.get("y"));
+        x = x.replace("\"", "");
+        y = y.replace("\"", "");
+
+        return CoordinateConverter.simpleCoordinateDto(x, y);
+    }
 
     public String buildCoordinateUrl(String type, String address) {
         StringBuilder urlBuilder = new StringBuilder(addressToCoordinateApiurl);

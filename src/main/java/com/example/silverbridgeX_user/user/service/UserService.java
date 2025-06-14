@@ -1,6 +1,7 @@
 package com.example.silverbridgeX_user.user.service;
 
 import com.example.silverbridgeX_user.global.api_payload.ErrorCode;
+import com.example.silverbridgeX_user.global.dto.CoordinateDto;
 import com.example.silverbridgeX_user.global.exception.GeneralException;
 import com.example.silverbridgeX_user.global.service.ApiService;
 import com.example.silverbridgeX_user.global.service.CoordinateService;
@@ -16,7 +17,6 @@ import com.example.silverbridgeX_user.user.dto.UserRequestDto.UserReqDto;
 import com.example.silverbridgeX_user.user.jwt.JwtTokenUtils;
 import com.example.silverbridgeX_user.user.repository.RefreshTokenRepository;
 import com.example.silverbridgeX_user.user.repository.UserRepository;
-import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
@@ -92,23 +92,14 @@ public class UserService {
 
             insertUserNodeIfNotExists(newUser.getId());
 
-            String urlStr = coordinateService.buildCoordinateUrl("ROAD", userReqDto.getStreetAddress());
-            String json = apiService.getJsonFromUrl(urlStr);
-            log.info(json);
-            JsonNode point = apiService.parsePoint(json);
-            if (!point.isMissingNode()) {
-                String x = String.valueOf(point.get("x"));
-                String y = String.valueOf(point.get("y"));
-                x = x.replace("\"", "");
-                y = y.replace("\"", "");
+            CoordinateDto.simpleCoordinateDto coordinateDto =
+                    coordinateService.getCoordinateByAddress("ROAD", userReqDto.getStreetAddress());
 
-                newUser.updateCoordinate(x, y);
-                userRepository.save(newUser);
-            }
+            newUser.updateCoordinate(coordinateDto.getX(), coordinateDto.getY());
+            userRepository.save(newUser);
         }
 
         manager.loadUserByUsername(newUser.getUsername()); // 저장된 사용자 정보를 다시 로드하여 동기화 시도
-
         return newUser;
     }
 
@@ -223,11 +214,18 @@ public class UserService {
     @Transactional
     public void saveNickname(UserRequestDto.UserNicknameReqDto nicknameReqDto, User user) {
         String nickname = nicknameReqDto.getNickname();
-
-        if (userRepository.existsByNickname(nickname)) {
-            throw GeneralException.of(ErrorCode.ALREADY_USED_NICKNAME);
-        }
         user.updateNickname(nickname);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void saveAddress(UserRequestDto.UserAddressReqDto addressReqDto, User user) throws Exception {
+        String address = addressReqDto.getStreetAddress();
+        user.updateAddress(address);
+
+        CoordinateDto.simpleCoordinateDto coordinateDto = coordinateService.getCoordinateByAddress("ROAD", address);
+        user.updateCoordinate(coordinateDto.getX(), coordinateDto.getY());
+        userRepository.save(user);
     }
 
     public void updatePreferredKeywords() {
@@ -249,6 +247,20 @@ public class UserService {
                 userRepository.save(user);
                 log.info(user.toString());
             });
+        }
+    }
+
+    public void validateOlder(User user) {
+        if (!user.getRole().equals(UserRole.OLDER)) {
+            log.info(String.valueOf(user.getRole()));
+            throw new GeneralException(ErrorCode.USER_NOT_OLDER);
+        }
+    }
+
+    public void validateProtector(User user) {
+        if (!user.getRole().equals(UserRole.PROTECTOR)) {
+            log.info(String.valueOf(user.getRole()));
+            throw new GeneralException(ErrorCode.USER_NOT_PROTECTOR);
         }
     }
 }
