@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>결제 완료</title>
+    <style>
+        body {
+            background-color: #ffffff;
+            color: #333333;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .payment-card {
+            background-color: #FFA91D;
+            border-radius: 10px;
+            padding: 20px;
+            width: 320px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            color: #222222;
+        }
+
+        .payment-card .title {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            color: #ffffff;
+        }
+
+        .payment-card .description {
+            font-size: 0.95em;
+            color: #ffffff;
+            margin-bottom: 20px;
+        }
+
+        .info-table {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: left;
+            font-size: 0.9em;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .info-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #555555;
+        }
+
+        .info-value {
+            color: #333333;
+        }
+
+        .footer-note {
+            font-size: 0.8em;
+            color: #ffffff;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="payment-card">
+    <div class="title">은빛동행 결제</div>
+    <div class="description">카카오페이 결제가 완료되었습니다.</div>
+
+    <div class="info-table">
+        <div class="info-row">
+            <span class="info-label">구매처</span>
+            <span class="info-value" th:text="'은빛동행'"></span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">결제일시</span>
+            <span class="info-value" th:text="${paymentInfo.approved_at}"></span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">상품명</span>
+            <span class="info-value" th:text="${paymentInfo.item_name}"></span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">결제금액</span>
+            <span class="info-value" th:text="${paymentInfo.amount.total + '원'}"></span>
+        </div>
+    </div>
+
+    <div class="footer-note">결제 승인 알림톡이 발송되었습니다.</div>
+</div>
+</body>
+</html>
