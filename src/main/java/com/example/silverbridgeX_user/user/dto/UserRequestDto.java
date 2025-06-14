@@ -1,5 +1,6 @@
 package com.example.silverbridgeX_user.user.dto;
 
+import com.example.silverbridgeX_user.user.domain.UserRole;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -16,12 +17,17 @@ public class UserRequestDto {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class UserReqDto {
+        @Schema(description = "역할(OLDER/PROTECTOR)")
+        private UserRole role;
 
         @Schema(description = "이메일")
         private String email;
 
         @Schema(description = "닉네임")
         private String nickname;
+
+        @Schema(description = "도로명 주소")
+        private String streetAddress;
 
     }
 
@@ -44,17 +50,10 @@ public class UserRequestDto {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class UserAddressReqDto {
-        @Schema(description = "수령자 이름")
-        private String recipientName;
-
-        @Schema(description = "전화번호")
-        private String phoneNumber;
 
         @Schema(description = "도로명 주소")
         private String streetAddress;
 
-        @Schema(description = "상세 주소")
-        private String detailedAddress;
     }
 
     @Schema(description = "UserPreferenceDto")

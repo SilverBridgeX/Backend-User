@@ -5,6 +5,8 @@ import com.example.silverbridgeX_user.matching.domain.MatchRequest;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -38,6 +40,10 @@ public class User extends BaseEntity {
 
     @Column(nullable = false)
     private String nickname;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private UserRole role;
 
     private String sex;
 
@@ -81,6 +87,11 @@ public class User extends BaseEntity {
 
     public void updatePreferredKeywords(List<String> keywords) {
         this.preferredKeywords = keywords;
+    }
+
+    public void updateCoordinate(String longitude, String latitude) {
+        this.longitude = longitude;
+        this.latitude = latitude;
     }
 }
 

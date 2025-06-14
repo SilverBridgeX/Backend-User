@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 
@@ -25,14 +26,14 @@ public class TokenController {
 
     private final UserService userService;
 
-    @Operation(summary = "토큰 반환", description = "프론트에게 유저 정보 받아 토큰 반환하는 메서드입니다.")
+    @Operation(summary = "토큰 반환", description = "노인/보호자 소셜 로그인 후, 프론트에게 유저 정보 받아 토큰 반환하는 메서드입니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "USER_2011", description = "회원가입 & 로그인 성공"),
     })
-    @PostMapping("/generate")
+    @PostMapping("/generate/social")
     public ApiResponse<JwtDto> tokenToFront(
-            @RequestBody UserRequestDto.UserReqDto userReqDto // email, username, nickname
-    ) {
+            @RequestBody UserRequestDto.UserReqDto userReqDto
+    ) throws Exception {
         Boolean isMember = userService.checkMemberByEmail(userReqDto.getEmail());
 
         String accessToken = "";
@@ -41,23 +42,41 @@ public class TokenController {
         String signIn = "wasUser";
 
         if (isMember) {
-            User user = userService.findByUserName(userReqDto.getEmail());
+            User user = userService.findByEmail(userReqDto.getEmail());
 
-            JwtDto jwt = userService.jwtMakeSave(userReqDto.getEmail());
+            JwtDto jwt = userService.jwtMakeSave(user.getUsername());
             accessToken = jwt.getAccessToken();
             refreshToken = jwt.getRefreshToken();
 
         } else {
-            User newUser = userService.createUser(userReqDto);
+            User user = userService.createUser(userReqDto);
 
-            JwtDto jwt = userService.jwtMakeSave(userReqDto.getEmail());
+            JwtDto jwt = userService.jwtMakeSave(user.getUsername());
             accessToken = jwt.getAccessToken();
             refreshToken = jwt.getRefreshToken();
 
             signIn = "newUser";
         }
 
-        return ApiResponse.onSuccess(SuccessCode.USER_LOGIN_SUCCESS,
+        return ApiResponse.onSuccess(SuccessCode.USER_SOCIAL_LOGIN_SUCCESS,
                 UserConverter.jwtDto(accessToken, refreshToken, signIn));
+    }
+
+    @Operation(summary = "토큰 반환", description = "노인의 key 로그인 후, 프론트에게 유저 정보 받아 토큰 반환하는 메서드입니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "USER_2012", description = "회원가입 & 로그인 성공"),
+    })
+    @PostMapping("/generate/key")
+    public ApiResponse<JwtDto> tokenToFront(
+            @RequestParam String key
+    ) {
+        User user = userService.findByUserName(key);
+
+        JwtDto jwt = userService.jwtMakeSave(user.getUsername());
+        String accessToken = jwt.getAccessToken();
+        String refreshToken = jwt.getRefreshToken();
+
+        return ApiResponse.onSuccess(SuccessCode.USER_KEY_LOGIN_SUCCESS,
+                UserConverter.jwtDto(accessToken, refreshToken, "wasUser"));
     }
 }

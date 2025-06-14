@@ -2,15 +2,21 @@ package com.example.silverbridgeX_user.user.service;
 
 import com.example.silverbridgeX_user.global.api_payload.ErrorCode;
 import com.example.silverbridgeX_user.global.exception.GeneralException;
+import com.example.silverbridgeX_user.global.service.ApiService;
+import com.example.silverbridgeX_user.global.service.CoordinateService;
+import com.example.silverbridgeX_user.global.util.UUID;
 import com.example.silverbridgeX_user.user.converter.UserConverter;
 import com.example.silverbridgeX_user.user.domain.RefreshToken;
 import com.example.silverbridgeX_user.user.domain.User;
+import com.example.silverbridgeX_user.user.domain.UserRole;
 import com.example.silverbridgeX_user.user.dto.JwtDto;
 import com.example.silverbridgeX_user.user.dto.UserRequestDto;
 import com.example.silverbridgeX_user.user.dto.UserRequestDto.UserPreferenceDto;
+import com.example.silverbridgeX_user.user.dto.UserRequestDto.UserReqDto;
 import com.example.silverbridgeX_user.user.jwt.JwtTokenUtils;
 import com.example.silverbridgeX_user.user.repository.RefreshTokenRepository;
 import com.example.silverbridgeX_user.user.repository.UserRepository;
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
@@ -34,13 +40,20 @@ public class UserService {
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final JpaUserDetailsManager manager;
+    private final CoordinateService coordinateService;
     private final JwtTokenUtils jwtTokenUtils;
     private final RestTemplate restTemplate;
+    private final ApiService apiService;
     private final Driver driver;
 
     @Value("${chat.server.url}")
     private String chatServerUrl;
+
+    @Value("${geocoder.api.key}")
+    private String key;
     private String PREF_URL;
+    public String addressToCoordinateApiUrl = "https://api.vworld.kr/req/address?service=address&format=json&request=getCoord&refine=false";
+
 
     @PostConstruct
     public void init() {
@@ -54,20 +67,48 @@ public class UserService {
     }
 
     @Transactional
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND_BY_EMAIL));
+    }
+
+    @Transactional
     public Boolean checkMemberByEmail(String email) {
         return userRepository.existsByEmail(email);
     }
 
     @Transactional
-    public User createUser(UserRequestDto.UserReqDto userReqDto) {
-        // User 엔티티 만들기
-        User newUser = UserConverter.saveUser(userReqDto);
+    public User createUser(UserReqDto userReqDto) throws Exception {
+
+        String uniqueKey;
+        do {
+            uniqueKey = UUID.generate();
+        } while (userRepository.existsByUsername(uniqueKey));
+
+        User newUser = UserConverter.saveUser(userReqDto, uniqueKey);
         userRepository.save(newUser);
 
-        // Neo4j 사용자 노드 만들기
-        insertUserNodeIfNotExists(newUser.getId());
+        if (userReqDto.getRole().equals(UserRole.OLDER)) {
 
-        manager.loadUserByUsername(userReqDto.getEmail()); // 저장된 사용자 정보를 다시 로드하여 동기화 시도
+            insertUserNodeIfNotExists(newUser.getId());
+
+            String urlStr = coordinateService.buildCoordinateUrl("ROAD", userReqDto.getStreetAddress());
+            String json = apiService.getJsonFromUrl(urlStr);
+            log.info(json);
+            JsonNode point = apiService.parsePoint(json);
+            if (!point.isMissingNode()) {
+                String x = String.valueOf(point.get("x"));
+                String y = String.valueOf(point.get("y"));
+                x = x.replace("\"", "");
+                y = y.replace("\"", "");
+
+                newUser.updateCoordinate(x, y);
+                userRepository.save(newUser);
+            }
+        }
+
+        manager.loadUserByUsername(newUser.getUsername()); // 저장된 사용자 정보를 다시 로드하여 동기화 시도
+
         return newUser;
     }
 

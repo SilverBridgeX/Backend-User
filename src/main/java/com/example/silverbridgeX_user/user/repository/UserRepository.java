@@ -25,7 +25,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // 5. 닉네임이 사용중인지 판단하는 기능
     boolean existsByNickname(String nickname);
-
+    
     @Modifying
     @Transactional
     @Query(value = "UPDATE member SET preferred_embedding = CAST(:embedding AS vector) WHERE id = :userId", nativeQuery = true)
