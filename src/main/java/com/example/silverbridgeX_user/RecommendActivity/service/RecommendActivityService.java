@@ -12,6 +12,8 @@ import com.example.silverbridgeX_user.activity.repository.ActivityRepository;
 import com.example.silverbridgeX_user.global.api_payload.ErrorCode;
 import com.example.silverbridgeX_user.global.exception.GeneralException;
 import com.example.silverbridgeX_user.user.domain.User;
+import com.example.silverbridgeX_user.user.domain.UserRole;
+import com.example.silverbridgeX_user.user.repository.UserRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
@@ -27,6 +29,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class RecommendActivityService {
+    private final UserRepository userRepository;
     private final ActivityLogRepository activityLogRepository;
     private final ActivityRepository activityRepository;
     private final RecommendActivityRepository recommendActivityRepository;
@@ -155,7 +158,7 @@ public class RecommendActivityService {
     public void generateAllUsersRecommendation() {
 
         // 0) 모든 사용자 조회 (PostgreSQL)
-        List<User> users = activityRepository.findAllUsers();
+        List<User> users = userRepository.findAllUsersByRole(UserRole.OLDER);
 
         try (Session session = neo4jDriver.session()) {
 
