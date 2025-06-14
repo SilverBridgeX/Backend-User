@@ -1,6 +1,8 @@
 package com.example.silverbridgeX_user.user.repository;
 
 import com.example.silverbridgeX_user.user.domain.User;
+import com.example.silverbridgeX_user.user.domain.UserRole;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -25,6 +27,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // 5. 닉네임이 사용중인지 판단하는 기능
     boolean existsByNickname(String nickname);
+
+    List<User> findAllUsersByRole(UserRole role);
 
     @Modifying
     @Transactional

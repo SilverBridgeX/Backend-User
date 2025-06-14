@@ -1,13 +1,18 @@
 package com.example.silverbridgeX_user.user.service;
 
 import com.example.silverbridgeX_user.global.api_payload.ErrorCode;
+import com.example.silverbridgeX_user.global.dto.CoordinateDto;
 import com.example.silverbridgeX_user.global.exception.GeneralException;
+import com.example.silverbridgeX_user.global.service.CoordinateService;
+import com.example.silverbridgeX_user.global.util.UUID;
 import com.example.silverbridgeX_user.user.converter.UserConverter;
 import com.example.silverbridgeX_user.user.domain.RefreshToken;
 import com.example.silverbridgeX_user.user.domain.User;
+import com.example.silverbridgeX_user.user.domain.UserRole;
 import com.example.silverbridgeX_user.user.dto.JwtDto;
 import com.example.silverbridgeX_user.user.dto.UserRequestDto;
 import com.example.silverbridgeX_user.user.dto.UserRequestDto.UserPreferenceDto;
+import com.example.silverbridgeX_user.user.dto.UserRequestDto.UserReqDto;
 import com.example.silverbridgeX_user.user.jwt.JwtTokenUtils;
 import com.example.silverbridgeX_user.user.repository.RefreshTokenRepository;
 import com.example.silverbridgeX_user.user.repository.UserRepository;
@@ -34,12 +39,14 @@ public class UserService {
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final JpaUserDetailsManager manager;
+    private final CoordinateService coordinateService;
     private final JwtTokenUtils jwtTokenUtils;
     private final RestTemplate restTemplate;
     private final Driver driver;
 
     @Value("${chat.server.url}")
     private String chatServerUrl;
+
     private String PREF_URL;
 
     @PostConstruct
@@ -54,20 +61,39 @@ public class UserService {
     }
 
     @Transactional
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND_BY_EMAIL));
+    }
+
+    @Transactional
     public Boolean checkMemberByEmail(String email) {
         return userRepository.existsByEmail(email);
     }
 
     @Transactional
-    public User createUser(UserRequestDto.UserReqDto userReqDto) {
-        // User 엔티티 만들기
-        User newUser = UserConverter.saveUser(userReqDto);
+    public User createUser(UserReqDto userReqDto) throws Exception {
+
+        String uniqueKey;
+        do {
+            uniqueKey = UUID.generate();
+        } while (userRepository.existsByUsername(uniqueKey));
+
+        User newUser = UserConverter.saveUser(userReqDto, uniqueKey);
         userRepository.save(newUser);
 
-        // Neo4j 사용자 노드 만들기
-        insertUserNodeIfNotExists(newUser.getId());
+        if (userReqDto.getRole().equals(UserRole.OLDER)) {
 
-        manager.loadUserByUsername(userReqDto.getEmail()); // 저장된 사용자 정보를 다시 로드하여 동기화 시도
+            insertUserNodeIfNotExists(newUser.getId());
+
+            CoordinateDto.simpleCoordinateDto coordinateDto =
+                    coordinateService.getCoordinateByAddress("ROAD", userReqDto.getStreetAddress());
+
+            newUser.updateCoordinate(coordinateDto.getX(), coordinateDto.getY());
+            userRepository.save(newUser);
+        }
+
+        manager.loadUserByUsername(newUser.getUsername()); // 저장된 사용자 정보를 다시 로드하여 동기화 시도
         return newUser;
     }
 
@@ -148,6 +174,13 @@ public class UserService {
             refreshTokenRepository.deleteByUsername(username);
             log.info("DB에서 리프레시 토큰 삭제 완료");
         }
+
+        if (user.getRole().equals(UserRole.PROTECTOR)) {
+            for (User older : user.getOlders()) {
+                older.updateProtector(null); // FK 끊기
+            }
+        }
+
         userRepository.delete(user);
         log.info("{} 회원 탈퇴 완료", username);
     }
@@ -182,13 +215,21 @@ public class UserService {
     @Transactional
     public void saveNickname(UserRequestDto.UserNicknameReqDto nicknameReqDto, User user) {
         String nickname = nicknameReqDto.getNickname();
-
-        if (userRepository.existsByNickname(nickname)) {
-            throw GeneralException.of(ErrorCode.ALREADY_USED_NICKNAME);
-        }
         user.updateNickname(nickname);
+        userRepository.save(user);
     }
 
+    @Transactional
+    public void saveAddress(UserRequestDto.UserAddressReqDto addressReqDto, User user) throws Exception {
+        String address = addressReqDto.getStreetAddress();
+        user.updateAddress(address);
+
+        CoordinateDto.simpleCoordinateDto coordinateDto = coordinateService.getCoordinateByAddress("ROAD", address);
+        user.updateCoordinate(coordinateDto.getX(), coordinateDto.getY());
+        userRepository.save(user);
+    }
+
+    @Transactional
     public void updatePreferredKeywords() {
         ResponseEntity<UserPreferenceDto[]> response
                 = restTemplate.getForEntity(PREF_URL, UserPreferenceDto[].class);
@@ -210,4 +251,41 @@ public class UserService {
             });
         }
     }
+
+    public void validateOlder(User user) {
+        if (!user.getRole().equals(UserRole.OLDER)) {
+            log.info(String.valueOf(user.getRole()));
+            throw new GeneralException(ErrorCode.USER_NOT_OLDER);
+        }
+    }
+
+    public void validateProtector(User user) {
+        if (!user.getRole().equals(UserRole.PROTECTOR)) {
+            log.info(String.valueOf(user.getRole()));
+            throw new GeneralException(ErrorCode.USER_NOT_PROTECTOR);
+        }
+    }
+
+    @Transactional
+    public void assignOlder(User protector, String key) {
+        User older = userRepository.findByUsername(key)
+                .orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND_BY_USERNAME));
+
+        validateProtector(protector);
+        validateOlder(older);
+
+        older.updateProtector(protector);
+        userRepository.save(older);
+    }
+
+    @Transactional
+    public String registerOlder(User protector, User older) {
+        validateProtector(protector);
+        validateOlder(older);
+
+        older.updateProtector(protector);
+        userRepository.save(older);
+        return older.getUsername();
+    }
+
 }

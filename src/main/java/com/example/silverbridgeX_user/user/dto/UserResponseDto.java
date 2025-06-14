@@ -10,18 +10,44 @@ import lombok.Setter;
 @NoArgsConstructor
 public class UserResponseDto {
 
-    @Schema(description = "UserMyPageResDto")
+    @Schema(description = "OlderMyPageResDto")
     @Getter
     @Setter
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class UserMyPageResDto {
+    public static class OlderMyPageResDto {
         @Schema(description = "닉네임")
         private String nickname;
 
-        @Schema(description = "프로필 이미지")
-        private String profileImage;
+        @Schema(description = "key")
+        private String key;
+
+        @Schema(description = "address")
+        private String address;
+
+        @Schema(description = "email")
+        private String email;
+    }
+
+    @Schema(description = "ProtectorMyPageResDto")
+    @Getter
+    @Setter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class ProtectorMyPageResDto {
+        @Schema(description = "닉네임")
+        private String nickname;
+
+        @Schema(description = "key")
+        private String key;
+
+        @Schema(description = "address")
+        private String address;
+
+        @Schema(description = "email")
+        private String email;
     }
 
 }

@@ -1,4 +1,4 @@
-package com.example.silverbridgeX_user.activity.service;
+package com.example.silverbridgeX_user.global.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ActivityApiService {
+public class ApiService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 

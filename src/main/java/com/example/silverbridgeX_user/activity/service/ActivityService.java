@@ -6,16 +6,14 @@ import com.example.silverbridgeX_user.activity.dto.ActivityResponseDto.FestivalI
 import com.example.silverbridgeX_user.activity.dto.ActivityResponseDto.TourSpotItemDto;
 import com.example.silverbridgeX_user.activity.repository.ActivityNativeRepository;
 import com.example.silverbridgeX_user.activity.repository.ActivityRepository;
-import com.example.silverbridgeX_user.global.api_payload.ErrorCode;
-import com.example.silverbridgeX_user.global.exception.GeneralException;
+import com.example.silverbridgeX_user.global.service.ApiService;
+import com.example.silverbridgeX_user.global.service.CoordinateService;
 import com.example.silverbridgeX_user.global.util.EmbeddingClient;
 import com.example.silverbridgeX_user.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -27,7 +25,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.Session;
 import org.neo4j.driver.Values;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -37,7 +34,8 @@ public class ActivityService {
     private final ActivityRepository activityRepository;
     private final EmbeddingClient embeddingClient;
     private final ActivityNativeRepository activityNativeRepository;
-    private final ActivityApiService activityApiService;
+    private final CoordinateService coordinateService;
+    private final ApiService apiService;
     private final UserRepository userRepository;
 
     private final Driver driver;
@@ -45,7 +43,6 @@ public class ActivityService {
 
     String festivalApiUrl = "http://api.data.go.kr/openapi/tn_pubr_public_cltur_fstvl_api";
     String tourSpotApiUrl = "http://api.data.go.kr/openapi/tn_pubr_public_trrsrt_api";
-    String addressToCoordinateApiurl = "https://api.vworld.kr/req/address?service=address&format=json&request=getCoord&refine=false";
 
     public void fetchAndSaveFestivalData() {
         ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
@@ -53,9 +50,9 @@ public class ActivityService {
         int page = 1;
         while (true) {
             try {
-                String urlStr = activityApiService.buildUrl(festivalApiUrl, page);
-                String json = activityApiService.getJsonFromUrl(urlStr);
-                JsonNode items = activityApiService.parseItems(json);
+                String urlStr = apiService.buildUrl(festivalApiUrl, page);
+                String json = apiService.getJsonFromUrl(urlStr);
+                JsonNode items = apiService.parseItems(json);
 
                 if (items == null || !items.isArray() || items.isEmpty()) {
                     log.info("page {} 응답 없음. 중단.", page);
@@ -111,15 +108,61 @@ public class ActivityService {
         }
     }
 
+    public void fetchAndSaveCoordinate() throws Exception {
+        List<Activity> activities = activityRepository.findAll();
+        System.out.println(activities.size());
+
+        for (Activity activity : activities) {
+
+            try {
+                if (activity.getLatitude().startsWith("\"")) {
+                    coordinateService.change(activity);
+                }
+
+                if (!activity.getLongitude().isEmpty() || !activity.getLatitude().isEmpty()) {
+                    continue;
+                }
+
+                String urlStr = null;
+
+                if (activity.getStreetAddress() != null) {
+                    urlStr = coordinateService.buildCoordinateUrl("ROAD", activity.getStreetAddress());
+                } else if (activity.getLotNumberAddress() != null) {
+                    urlStr = coordinateService.buildCoordinateUrl("PARCEL", activity.getLotNumberAddress());
+                }
+
+                if (urlStr == null) {
+                    continue;
+                }
+
+                String json = apiService.getJsonFromUrl(urlStr);
+                log.info(json);
+                JsonNode point = apiService.parsePoint(json);
+
+                if (!point.isMissingNode()) {
+                    String x = String.valueOf(point.get("x"));
+                    String y = String.valueOf(point.get("y"));
+
+                    activity.updateCoordinate(x, y);
+                    activityRepository.save(activity);
+                }
+            } catch (IOException | ParseException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+    }
+
     public void fetchAndSaveTourSpotData() {
         ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
         int page = 1;
         while (true) {
             try {
-                String urlStr = activityApiService.buildUrl(tourSpotApiUrl, page);
-                String json = activityApiService.getJsonFromUrl(urlStr);
-                JsonNode items = activityApiService.parseItems(json);
+                String urlStr = apiService.buildUrl(tourSpotApiUrl, page);
+                String json = apiService.getJsonFromUrl(urlStr);
+                JsonNode items = apiService.parseItems(json);
 
                 if (items == null || !items.isArray() || items.isEmpty()) {
                     log.info("page {} 응답 없음. 중단.", page);
@@ -167,97 +210,6 @@ public class ActivityService {
                 break;
             }
         }
-    }
-
-    public void fetchAndSaveCoordinate() throws Exception {
-        List<Activity> activities = activityRepository.findAll();
-        System.out.println(activities.size());
-
-        for (Activity activity : activities) {
-
-            try {
-                if (activity.getLatitude().startsWith("\"")) {
-                    change(activity);
-                }
-
-                if (!activity.getLongitude().isEmpty() || !activity.getLatitude().isEmpty()) {
-                    continue;
-                }
-
-                String urlStr = null;
-
-                if (activity.getStreetAddress() != null) {
-                    urlStr = buildCoordinateUrl("ROAD", activity.getStreetAddress());
-                } else if (activity.getLotNumberAddress() != null) {
-                    urlStr = buildCoordinateUrl("PARCEL", activity.getLotNumberAddress());
-                }
-
-                if (urlStr == null) {
-                    continue;
-                }
-
-                String json = activityApiService.getJsonFromUrl(urlStr);
-                log.info(json);
-                JsonNode point = activityApiService.parsePoint(json);
-
-                if (!point.isMissingNode()) {
-                    String x = String.valueOf(point.get("x"));
-                    String y = String.valueOf(point.get("y"));
-
-                    activity.updateCoordinate(x, y);
-                    activityRepository.save(activity);
-                }
-            } catch (IOException | ParseException e) {
-                throw new RuntimeException(e);
-            }
-
-        }
-
-    }
-
-    @Value("${geocoder.api.key}")
-    private String key;
-
-    private String buildCoordinateUrl(String type, String address) throws Exception {
-        StringBuilder urlBuilder = new StringBuilder(addressToCoordinateApiurl);
-        urlBuilder.append("&key=" + key);
-        urlBuilder.append("&type=" + type); // PARCEL : 지번주소, ROAD : 도로명주소
-        urlBuilder.append("&address=" + URLEncoder.encode(address, StandardCharsets.UTF_8));
-        return urlBuilder.toString();
-    }
-
-    private void change(Activity activity) {
-        String latitude = activity.getLatitude();
-        String longitude = activity.getLongitude();
-
-        boolean updated = false;
-
-        if (latitude != null && latitude.contains("\"")) {
-            latitude = latitude.replace("\"", ""); // 모든 " 제거
-            activity.updateLatitude(latitude);
-            updated = true;
-        }
-
-        if (longitude != null && longitude.contains("\"")) {
-            longitude = longitude.replace("\"", "");
-            activity.updateLongitude(longitude);
-            updated = true;
-        }
-
-        if (updated) {
-            activityRepository.save(activity);
-            System.out.println("좌표 문자열 정제 완료: " + activity.getId());
-        }
-    }
-
-    // 해당 API에서 제공하지 않는 주소들에 대한 2차 검증 로직
-    public void test() throws Exception {
-        Activity activity = activityRepository.findById(Long.valueOf(102))
-                .orElseThrow(() -> GeneralException.of(ErrorCode.ACTIVITY_NOT_FOUND));
-        String urlStr = buildCoordinateUrl("PARCEL", activity.getLotNumberAddress());
-        String json = activityApiService.getJsonFromUrl(urlStr);
-        System.out.println(json);
-
     }
 
     public void insertActivitiesNeo4j() {
