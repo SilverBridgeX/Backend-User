@@ -3,15 +3,13 @@ package com.example.silverbridgeX_user.user.converter;
 import com.example.silverbridgeX_user.user.domain.User;
 import com.example.silverbridgeX_user.user.dto.JwtDto;
 import com.example.silverbridgeX_user.user.dto.UserRequestDto;
-import lombok.NoArgsConstructor;
 
-@NoArgsConstructor
 public class UserConverter {
     public static User saveUser(UserRequestDto.UserReqDto userReqDto) {
 
         return User.builder()
                 .email(userReqDto.getEmail())
-                .username(userReqDto.getUsername())
+                .username(userReqDto.getEmail())
                 .nickname(userReqDto.getNickname())
                 .build();
     }

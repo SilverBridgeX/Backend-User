@@ -31,6 +31,9 @@ public enum ErrorCode implements BaseCode {
     // Activity
     ACTIVITY_NOT_FOUND(HttpStatus.NOT_FOUND, "ACTIVITY_4041", "존재하지 않는 활동입니다."),
 
+    // Recommend Activity
+    RECOMMEND_ACTIVITY_NOT_FOUND(HttpStatus.NOT_FOUND, "RECOMMEND_4041", "존재하지 않는 추천입니다."),
+
     ;
 
     private final HttpStatus httpStatus;

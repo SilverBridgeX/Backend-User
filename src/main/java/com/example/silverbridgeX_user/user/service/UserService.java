@@ -7,9 +7,11 @@ import com.example.silverbridgeX_user.user.domain.RefreshToken;
 import com.example.silverbridgeX_user.user.domain.User;
 import com.example.silverbridgeX_user.user.dto.JwtDto;
 import com.example.silverbridgeX_user.user.dto.UserRequestDto;
+import com.example.silverbridgeX_user.user.dto.UserRequestDto.UserPreferenceDto;
 import com.example.silverbridgeX_user.user.jwt.JwtTokenUtils;
 import com.example.silverbridgeX_user.user.repository.RefreshTokenRepository;
 import com.example.silverbridgeX_user.user.repository.UserRepository;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import java.util.List;
@@ -19,8 +21,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.Session;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 @Slf4j
 @Service
@@ -30,8 +35,17 @@ public class UserService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final JpaUserDetailsManager manager;
     private final JwtTokenUtils jwtTokenUtils;
-
+    private final RestTemplate restTemplate;
     private final Driver driver;
+
+    @Value("${chat.server.url}")
+    private String chatServerUrl;
+    private String PREF_URL;
+
+    @PostConstruct
+    public void init() {
+        this.PREF_URL = chatServerUrl + "/summary/preferences/all";
+    }
 
     @Transactional
     public User findByUserName(String userName) {
@@ -51,9 +65,9 @@ public class UserService {
         userRepository.save(newUser);
 
         // Neo4j 사용자 노드 만들기
-        //insertUserNodeIfNotExists(newUser.getId(), newUser.getUsername());
+        insertUserNodeIfNotExists(newUser.getId());
 
-        manager.loadUserByUsername(userReqDto.getUsername()); // 저장된 사용자 정보를 다시 로드하여 동기화 시도
+        manager.loadUserByUsername(userReqDto.getEmail()); // 저장된 사용자 정보를 다시 로드하여 동기화 시도
         return newUser;
     }
 
@@ -138,7 +152,7 @@ public class UserService {
         log.info("{} 회원 탈퇴 완료", username);
     }
 
-    public void insertUserNodeIfNotExists(Long userId, String name) {
+    public void insertUserNodeIfNotExists(Long userId) {
         try (Session session = driver.session()) {
             session.writeTransaction(tx -> {
                 // 존재 여부 확인
@@ -151,20 +165,14 @@ public class UserService {
                 if (!exists) {
                     tx.run("""
                                 CREATE (u:User {
-                                    id: $id,
-                                    name: $name,
-                                    keywords: $keywords,
-                                    embedding: $embedding
+                                    id: $id
                                 })
                             """, Map.of(
-                            "id", userId,
-                            "name", name,
-                            "keywords", List.of(),         // 기본 null 대신 빈 리스트
-                            "embedding", List.of()         // 빈 float 배열
+                            "id", userId
                     ));
-                    System.out.println("사용자 노드 생성 완료: " + name);
+                    log.info("사용자 노드 생성 완료: " + userId);
                 } else {
-                    System.out.println("이미 존재: " + name);
+                    log.info("이미 존재: " + userId);
                 }
                 return null;
             });
@@ -181,4 +189,25 @@ public class UserService {
         user.updateNickname(nickname);
     }
 
+    public void updatePreferredKeywords() {
+        ResponseEntity<UserPreferenceDto[]> response
+                = restTemplate.getForEntity(PREF_URL, UserPreferenceDto[].class);
+        UserPreferenceDto[] dtos = response.getBody();
+
+        if (dtos == null) {
+            return;
+        }
+
+        for (UserPreferenceDto dto : dtos) {
+            userRepository.findById(dto.getUserId()).ifPresent(user -> {
+                List<String> deduplicated = dto.getPreferences().stream()
+                        .distinct()
+                        .toList();
+
+                user.updatePreferredKeywords(deduplicated);
+                userRepository.save(user);
+                log.info(user.toString());
+            });
+        }
+    }
 }

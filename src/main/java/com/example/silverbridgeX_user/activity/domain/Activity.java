@@ -2,10 +2,11 @@ package com.example.silverbridgeX_user.activity.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Transient;
 import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,12 +26,14 @@ public class Activity {
     @Column(unique = true)
     private String name;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private ActivityType activityType;
 
+    @Column(length = 1000)
     private String description;
 
-    @Column(columnDefinition = "vector(384)")
-    @Transient // JPA 저장 시 무시
+    @Column(name = "description_embedding", columnDefinition = "vector(384)", insertable = false, updatable = false)
     private String descriptionEmbedding;
 
     private String streetAddress;
@@ -49,10 +52,23 @@ public class Activity {
 
     private String phoneNumber;
 
-    private Long chosen;
+    private Long clickNum;
 
-    private Long shown;
+    private Long impressionNum;
 
-    private Double CTR;
+    private Double ctr;
+
+    public void updateCoordinate(String longitude, String latitude) {
+        this.longitude = longitude;
+        this.latitude = latitude;
+    }
+
+    public void updateLongitude(String longitude) {
+        this.longitude = longitude;
+    }
+
+    public void updateLatitude(String latitude) {
+        this.latitude = latitude;
+    }
 
 }

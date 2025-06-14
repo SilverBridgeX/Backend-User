@@ -23,6 +23,11 @@ public enum SuccessCode implements BaseCode {
     USER_PROFILE_IMAGE_UPDATE_SUCCESS(HttpStatus.OK, "USER_2007", "프로필 사진 이미지 업로드가 완료 되었습니다."),
     USER_MYPAGE_VIEW_SUCCESS(HttpStatus.OK, "USER_2010", "마이페이지 정보 조회가 완료되었습니다."),
 
+    // Recommend Activity
+    RECOMMEND_ACTIVITY_VIEW_LIST_SUCCESS(HttpStatus.OK, "ACTIVITY_2001", "추천하는 활동 리스를 반환 완료했습니다."),
+    RECOMMEND_ACTIVITY_SELECT_LOG_SUCCESS(HttpStatus.OK, "ACTIVITY_2002", "선택한 활동 로그와 selected 간선 저장 완료했습니다."),
+    RECOMMEND_ACTIVITY_VIEW_LOG_SUCCESS(HttpStatus.OK, "ACTIVITY_2002", "열람한 활동 로그를 저장 완료했습니다."),
+
     // MatchRequest
     MATCH_REQUEST_SUCCESS(HttpStatus.OK, "MATCH_REQUEST_2001", "매치 신청이 완료되었습니다."),
     ;
