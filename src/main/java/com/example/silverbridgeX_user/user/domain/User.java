@@ -2,6 +2,7 @@ package com.example.silverbridgeX_user.user.domain;
 
 import com.example.silverbridgeX_user.global.entity.BaseEntity;
 import com.example.silverbridgeX_user.matching.domain.MatchRequest;
+import com.example.silverbridgeX_user.payment.domain.Payment;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -22,6 +23,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -58,7 +61,7 @@ public class User extends BaseEntity {
 
     private String sex;
 
-    private String birth;
+    private LocalDate birth;
 
     private String streetAddress;
 
@@ -70,6 +73,9 @@ public class User extends BaseEntity {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private MatchRequest matchRequest;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private Payment payment;
 
     @JdbcTypeCode(SqlTypes.JSON)
     private List<String> preferredKeywords;

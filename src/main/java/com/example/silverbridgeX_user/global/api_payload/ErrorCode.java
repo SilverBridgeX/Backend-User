@@ -31,6 +31,10 @@ public enum ErrorCode implements BaseCode {
     // Recommend Activity
     RECOMMEND_ACTIVITY_NOT_FOUND(HttpStatus.NOT_FOUND, "RECOMMEND_4041", "존재하지 않는 추천입니다."),
 
+    // Payment
+    TID_NOT_EXIST(HttpStatus.BAD_REQUEST, "PAYMENT_4001", "tid가 존재하지 않습니다."),
+    TID_SID_UNSUPPORTED(HttpStatus.BAD_REQUEST, "PAYMENT_4002", "지원되지 않는 tid, sid 입니다."),
+    SID_NOT_EXIST(HttpStatus.BAD_REQUEST, "PAYMENT_4003", "sid가 존재하지 않습니다."),
     ;
 
     private final HttpStatus httpStatus;

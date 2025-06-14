@@ -32,6 +32,10 @@ logging:
     org.springframework.batch: DEBUG
     org.springframework.jdbc.datasource.init: DEBUG
 
+kakaopay:
+  secret_key: ${kakao.secret.key}
+  cid: ${kakao.cid}
+
 ---
 
 # local profile
