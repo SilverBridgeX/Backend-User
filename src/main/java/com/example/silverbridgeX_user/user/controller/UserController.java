@@ -5,14 +5,18 @@ import com.example.silverbridgeX_user.global.api_payload.SuccessCode;
 import com.example.silverbridgeX_user.user.converter.UserConverter;
 import com.example.silverbridgeX_user.user.domain.User;
 import com.example.silverbridgeX_user.user.dto.JwtDto;
+import com.example.silverbridgeX_user.user.dto.KakaoDto;
 import com.example.silverbridgeX_user.user.dto.UserRequestDto;
 import com.example.silverbridgeX_user.user.dto.UserRequestDto.UserAddressReqDto;
 import com.example.silverbridgeX_user.user.dto.UserRequestDto.UserNicknameReqDto;
 import com.example.silverbridgeX_user.user.dto.UserResponseDto.GuardianMyPageResDto;
 import com.example.silverbridgeX_user.user.dto.UserResponseDto.OlderMyPageResDto;
 import com.example.silverbridgeX_user.user.jwt.CustomUserDetails;
+import com.example.silverbridgeX_user.user.service.KakaoService;
 import com.example.silverbridgeX_user.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,6 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/members")
 public class UserController {
     private final UserService userService;
+    private final KakaoService kakaoService;
 
     @Operation(summary = "소셜 회원가입", description = "프론트에게 유저 정보 받아 소셜 회원가입 후, 토큰 반환하는 메서드입니다.")
     @ApiResponses({
@@ -73,6 +78,23 @@ public class UserController {
 
         return ApiResponse.onSuccess(SuccessCode.USER_SOCIAL_LOGIN_SUCCESS,
                 UserConverter.jwtDto(accessToken, refreshToken, user.getUsername()));
+    }
+
+    @GetMapping("/code/kakao")
+    @Operation(summary = "카카오 로그인 API", description = "카카오 로그인 API입니다.")
+    @Parameters({
+            @Parameter(name = "code", description = "카카오 API에 대한 response code, query parameter 입니다!")
+    })
+    public ApiResponse<?> kakaoLogin(@RequestParam("code") String code) {
+        String accessToken = kakaoService.getAccessTokenFromKakao(code);
+
+        KakaoDto.KakaoUserInfoResponseDTO userInfo = kakaoService.getUserInfo(accessToken);
+
+        String email = userInfo.getKakaoAccount().getEmail();
+
+        boolean isUser = userService.existByEmail(email);
+
+        return ApiResponse.onSuccess(SuccessCode.USER_KAKAO_LOGIN_SUCCESS, UserConverter.toSocialLoginResponseDTO(isUser, email));
     }
 
     @Operation(summary = "key 로그인", description = "노인의 key 로그인 후, 프론트에게 유저 정보 받아 토큰 반환하는 메서드입니다.")

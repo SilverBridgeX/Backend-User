@@ -2,6 +2,7 @@ package com.example.silverbridgeX_user.user.converter;
 
 import com.example.silverbridgeX_user.user.domain.User;
 import com.example.silverbridgeX_user.user.dto.JwtDto;
+import com.example.silverbridgeX_user.user.dto.KakaoDto;
 import com.example.silverbridgeX_user.user.dto.UserRequestDto;
 import com.example.silverbridgeX_user.user.dto.UserResponseDto.GuardianMyPageResDto;
 import com.example.silverbridgeX_user.user.dto.UserResponseDto.OlderInfoDto;
@@ -54,4 +55,11 @@ public class UserConverter {
                 .build();
     }
 
+    public static KakaoDto.SocialLoginResponseDTO toSocialLoginResponseDTO(boolean isUser, String email) {
+
+        return KakaoDto.SocialLoginResponseDTO.builder()
+                .isUser(isUser)
+                .email(email)
+                .build();
+    }
 }
