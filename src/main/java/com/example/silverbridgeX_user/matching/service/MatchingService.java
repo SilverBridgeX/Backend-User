@@ -1,5 +1,7 @@
 package com.example.silverbridgeX_user.matching.service;
 
+import com.example.silverbridgeX_user.global.api_payload.ErrorCode;
+import com.example.silverbridgeX_user.global.exception.GeneralException;
 import com.example.silverbridgeX_user.matching.algorithm.AdjacencyGraphBuilder;
 import com.example.silverbridgeX_user.matching.algorithm.Matcher;
 import com.example.silverbridgeX_user.matching.converter.MatchingConverter;
@@ -29,15 +31,27 @@ public class MatchingService {
     private String chatServerUrl;
 
     private final MatchingRepository matchingRepository;
-    private final UserRepository userRepository;
 
     @Transactional
     public void saveMatchRequest(User user) {
-        MatchRequest matchRequest = MatchingConverter.toMatchRequest(user);
+        MatchRequest matchRequest;
+
+        if (matchingRepository.existsByUser_Id(user.getId())) {
+            matchRequest = matchingRepository.findByUser_Id(user.getId()).orElseThrow(() -> new GeneralException(ErrorCode.MATCH_NOT_EXIST));
+            matchRequest.updateStatus(MatchStatus.WAITING);
+        }
+        else {
+            matchRequest = MatchingConverter.toMatchRequest(user);
+        }
 
         matchingRepository.save(matchRequest);
     }
 
+    @Transactional
+    public boolean checkMatchRequest(User user) {
+
+        return matchingRepository.existsByUser_IdAndStatus(user.getId(), MatchStatus.WAITING);
+    }
 
     @Transactional
     public void executeMatchingAlgorithm() {
