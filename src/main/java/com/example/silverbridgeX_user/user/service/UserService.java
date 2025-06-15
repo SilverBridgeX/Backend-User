@@ -67,6 +67,12 @@ public class UserService {
     }
 
     @Transactional
+    public boolean existByEmail(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
+
+    @Transactional
     public Boolean checkMemberByEmail(String email) {
         return userRepository.existsByEmail(email);
     }

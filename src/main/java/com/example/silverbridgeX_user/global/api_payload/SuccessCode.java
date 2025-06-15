@@ -16,6 +16,7 @@ public enum SuccessCode implements BaseCode {
     USER_SOCIAL_SIGNIN_SUCCESS(HttpStatus.CREATED, "USER_2011", "소셜 회원가입이 완료되었습니다."),
     USER_SOCIAL_LOGIN_SUCCESS(HttpStatus.CREATED, "USER_2012", "소셜 로그인이 완료되었습니다."),
     USER_KEY_LOGIN_SUCCESS(HttpStatus.CREATED, "USER_2013", "KEY 로그인이 완료되었습니다."),
+    USER_KAKAO_LOGIN_SUCCESS(HttpStatus.CREATED, "USER_2014", "카카오 로그인이 완료되었습니다."),
     USER_LOGOUT_SUCCESS(HttpStatus.OK, "USER_2001", "로그아웃 되었습니다."),
     USER_REISSUE_SUCCESS(HttpStatus.OK, "USER_2002", "토큰 재발급이 완료되었습니다."),
     USER_DELETE_SUCCESS(HttpStatus.OK, "USER_2003", "회원탈퇴가 완료되었습니다."),
