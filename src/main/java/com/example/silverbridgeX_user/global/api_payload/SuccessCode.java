@@ -33,6 +33,7 @@ public enum SuccessCode implements BaseCode {
 
     // MatchRequest
     MATCH_REQUEST_SUCCESS(HttpStatus.OK, "MATCH_REQUEST_2001", "매치 신청이 완료되었습니다."),
+    MATCH_VIEW_REQUEST_RESULT_SUCCESS(HttpStatus.OK, "MATCH_REQUEST_2001", "매치 신청 결과 반환 완료되었습니다."),
 
     // Payment
     PAYMENT_URL_CREATE_SUCCESS(HttpStatus.OK, "PAYMENT_2001", "카카오페이 URL을 생성하였습니다."),
