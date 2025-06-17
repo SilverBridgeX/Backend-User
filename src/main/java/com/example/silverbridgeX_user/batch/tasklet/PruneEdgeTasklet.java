@@ -18,8 +18,9 @@ public class PruneEdgeTasklet implements Tasklet {
     @Override
     public RepeatStatus execute(@NonNull StepContribution con, @NonNull ChunkContext ctx) {
         String del = """
-                    MATCH (:User)-[r:PREFERRED]->(:Activity)
-                    WHERE r.score < 0.4
+                   MATCH ()-[r]->()
+                    WHERE (type(r) = "PREFERRED" OR type(r) = "SIMILAR")
+                      AND r.score < 0.85
                     DELETE r
                 """;
         recommendActivityService.execWrite(del);

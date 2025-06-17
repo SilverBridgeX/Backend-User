@@ -87,7 +87,7 @@ public class UpdateGraphTasklet implements Tasklet {
                       (CASE
                          WHEN cnt1 = 0 AND cnt2 > 0 THEN pref_sim
                          ELSE 0.7 * pref_sim + 0.3 * act_sim
-                      END) >= 0.5;
+                      END) >= 0.9;
                 """;
 
         List<Map<String, Object>> simRows = jdbc.queryForList(similarSql, Map.of());

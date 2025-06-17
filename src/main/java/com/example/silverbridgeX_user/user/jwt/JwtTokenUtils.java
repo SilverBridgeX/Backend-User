@@ -35,8 +35,7 @@ public class JwtTokenUtils {
             @Value("${jwt.secret}") String jwtSecret,
             @Value("${jwt.accessExpirationTime}") int accessExpirationTime,
             @Value("${jwt.refreshExpirationTime}") int refreshExpirationTime
-    )
-    {
+    ) {
         this.signingKey = Keys.hmacShaKeyFor(jwtSecret.getBytes());
         this.jwtParser = Jwts.parserBuilder().setSigningKey(this.signingKey).build();
         this.accessExpirationTime = accessExpirationTime;
@@ -66,6 +65,7 @@ public class JwtTokenUtils {
                 .setExpiration(Date.from(Instant.now().plusSeconds(refreshExpirationTime)));
         String refreshToken = Jwts.builder()
                 .setClaims(refreshTokenClaims)
+                .claim("authorities", authorities)
                 .signWith(signingKey)
                 .compact();
 
@@ -111,7 +111,7 @@ public class JwtTokenUtils {
     }
 
     // 문자열로 저장된 authorities를 다시 Collection으로 변환
-    public Collection<? extends GrantedAuthority> getAuthFromClaims(Claims claims){
+    public Collection<? extends GrantedAuthority> getAuthFromClaims(Claims claims) {
 
         String authoritiesString = (String) claims.get("authorities"); // authorities 정보 가져오기
 
