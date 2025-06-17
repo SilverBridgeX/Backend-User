@@ -36,6 +36,8 @@ kakaopay:
   secret_key: ${kakao.secret.key}
   cid: ${kakao.cid}
 
+kakao:
+  client_id: ${kakao.client.id}
 ---
 
 # local profile

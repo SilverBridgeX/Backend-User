@@ -38,7 +38,7 @@ public class PaymentController {
 
     @PostMapping("/ready/key")
     @Operation(summary = "카카오페이 URL 생성 API", description = "key를 이용하여 카카오페이 URL을 생성하는 API 입니다.")
-    public ApiResponse<PaymentDto.KakaoReadyResponse> readyToKakaoPay(@RequestParam("pg_token") String key) {
+    public ApiResponse<PaymentDto.KakaoReadyResponse> readyToKakaoPay(@RequestParam("id") String key) {
         PaymentDto.KakaoReadyResponse kakaoReadyResponse = paymentService.kakaoPayReady();
 
         User user = userService.findByUserName(key);
@@ -81,9 +81,38 @@ public class PaymentController {
         return ApiResponse.onSuccess(SuccessCode.PAYMENT_CANCEL_SUCCESS, kakaoCancelResponse);
     }
 
+    @GetMapping("/cancel/key")
+    public ApiResponse<PaymentDto.KakaoCancelResponse> refund(@RequestParam("id") String key) {
+
+        User user = userService.findByUserName(key);
+        Long userId = user.getId();
+
+        Payment kakaoPay = paymentService.getKakaoPayInfo(userId);
+
+        PaymentDto.KakaoCancelResponse kakaoCancelResponse = paymentService.cancelResponse(kakaoPay.getTid());
+
+        paymentService.cancelPay(userId);
+
+        return ApiResponse.onSuccess(SuccessCode.PAYMENT_CANCEL_SUCCESS, kakaoCancelResponse);
+    }
+
     @PostMapping("/subscribe")
     public ApiResponse<PaymentDto.KakaoApproveResponse> subscribePayRequest(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         User user = userService.findByUserName(customUserDetails.getUsername());
+        Long userId = user.getId();
+
+        Payment kakaoPay = paymentService.getKakaoPayInfo(userId);
+
+        PaymentDto.KakaoApproveResponse kakaoApproveResponse = paymentService.approveSubscribeResponse(kakaoPay.getSid());
+
+        paymentService.savePayInfo(userId, kakaoApproveResponse);
+
+        return ApiResponse.onSuccess(SuccessCode.PAYMENT_SUBSCRIBE_SUCCESS, kakaoApproveResponse);
+    }
+
+    @PostMapping("/subscribe/key")
+    public ApiResponse<PaymentDto.KakaoApproveResponse> subscribePayRequest(@RequestParam("id") String key) {
+        User user = userService.findByUserName(key);
         Long userId = user.getId();
 
         Payment kakaoPay = paymentService.getKakaoPayInfo(userId);
@@ -108,10 +137,46 @@ public class PaymentController {
         return ApiResponse.onSuccess(SuccessCode.PAYMENT_URL_CREATE_SUCCESS, kakaoSubscribeCancelResponse);
     }
 
+    @PostMapping("/subscribe/cancel/key")
+    @Operation(summary = "카카오페이 구독 취소 API", description = "key를 이용하여 카카오페이 구독을 취소하는 API 입니다.")
+    public ApiResponse<PaymentDto.KakaoSubscribeCancelResponse> subscribeCancelRequest(@RequestParam("id") String key) {
+        User user = userService.findByUserName(key);
+        Long userId = user.getId();
+
+        Payment kakaoPay = paymentService.getKakaoPayInfo(userId);
+
+        PaymentDto.KakaoSubscribeCancelResponse kakaoSubscribeCancelResponse = paymentService.subscribeCancelResponse(kakaoPay.getSid());
+
+        return ApiResponse.onSuccess(SuccessCode.PAYMENT_URL_CREATE_SUCCESS, kakaoSubscribeCancelResponse);
+    }
+
     @GetMapping("/subscribe/status")
     @Operation(summary = "카카오페이 구독 상태 확인 API", description = "카카오페이 구독 상태를 확인하는 API 입니다.")
     public ApiResponse<PaymentDto.KakaoPayStatus> subscribeStatusRequest(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         User user = userService.findByUserName(customUserDetails.getUsername());
+        Long userId = user.getId();
+
+        PaymentDto.KakaoSubscribeStatusResponse kakaoSubscribeStatusResponse = new PaymentDto.KakaoSubscribeStatusResponse();
+
+        boolean isLogExist = false;
+        if (paymentService.getKakaoPayLog(userId)) {
+            Payment kakaoPay = paymentService.getKakaoPayInfo(userId);
+
+            if (kakaoPay.getSid() == null || kakaoPay.getSid().isEmpty()) {}
+            else {
+                isLogExist = true;
+
+                kakaoSubscribeStatusResponse = paymentService.subscribeStatusResponse(kakaoPay.getSid());
+            }
+        }
+
+        return ApiResponse.onSuccess(SuccessCode.PAYMENT_VIEW_SUBSCRIBE_STATUS_SUCCESS, PaymentConverter.toKakaoPayStatus(isLogExist, kakaoSubscribeStatusResponse));
+    }
+
+    @GetMapping("/subscribe/status/key")
+    @Operation(summary = "카카오페이 구독 상태 확인 API", description = "key를 이용하여 카카오페이 구독 상태를 확인하는 API 입니다.")
+    public ApiResponse<PaymentDto.KakaoPayStatus> subscribeStatusRequest(@RequestParam("id") String key) {
+        User user = userService.findByUserName(key);
         Long userId = user.getId();
 
         PaymentDto.KakaoSubscribeStatusResponse kakaoSubscribeStatusResponse = new PaymentDto.KakaoSubscribeStatusResponse();

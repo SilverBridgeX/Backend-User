@@ -38,5 +38,14 @@ public class MatchingController {
 
         return ApiResponse.onSuccess(SuccessCode.MATCH_REQUEST_SUCCESS, true);
     }
+    @PostMapping("/results")
+    public ApiResponse<Boolean> matchRequestResult(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails
+    ) {
+        User user = userService.findByUserName(customUserDetails.getUsername());
 
+        boolean isNotMatched = matchingService.checkMatchRequest(user);
+
+        return ApiResponse.onSuccess(SuccessCode.MATCH_VIEW_REQUEST_RESULT_SUCCESS, !isNotMatched);
+    }
 }
