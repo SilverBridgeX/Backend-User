@@ -171,10 +171,6 @@ public class PaymentService {
         return kakaoPay;
     }
 
-    public boolean existKakaoPayLog(Long userId) {
-        return paymentRepository.existsByUserId(userId);
-    }
-
     @Transactional
     public void saveTid(Long userId, String tid) {
         if (paymentRepository.existsByTid(tid)) {
