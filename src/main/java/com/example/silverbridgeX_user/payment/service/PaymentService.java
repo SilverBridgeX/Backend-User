@@ -64,7 +64,11 @@ public class PaymentService {
         parameters.put("fail_url", "http://15.165.17.95/user/payment/fail");
         parameters.put("cancel_url", "http://15.165.17.95/user/payment/cancel");
 
-        return restTemplateUtil.post(READY_URL, parameters, getHeaders(), PaymentDto.KakaoReadyResponse.class);
+        try {
+            return restTemplateUtil.post(READY_URL, parameters, getHeaders(), PaymentDto.KakaoReadyResponse.class);
+        } catch (Exception e) {
+            throw new GeneralException(ErrorCode.EXTERNAL_API_ERROR);
+        }
     }
 
     @Transactional(readOnly = true)
@@ -80,7 +84,11 @@ public class PaymentService {
         parameters.put("partner_user_id", "USER_ID");
         parameters.put("pg_token", pgToken);
 
-        return restTemplateUtil.post(APPROVE_URL, parameters, getHeaders(), PaymentDto.KakaoApproveResponse.class);
+        try {
+            return restTemplateUtil.post(APPROVE_URL, parameters, getHeaders(), PaymentDto.KakaoApproveResponse.class);
+        } catch (Exception e) {
+            throw new GeneralException(ErrorCode.PAYMENT_FAILED);
+        }
     }
 
     public PaymentDto.KakaoCancelResponse cancelResponse(String tid) {
@@ -95,7 +103,11 @@ public class PaymentService {
         parameters.put("cancel_tax_free_amount", "0");
         parameters.put("cancel_vat_amount", "0");
 
-        return restTemplateUtil.post(CANCEL_URL, parameters, getHeaders(), PaymentDto.KakaoCancelResponse.class);
+        try {
+            return restTemplateUtil.post(CANCEL_URL, parameters, getHeaders(), PaymentDto.KakaoCancelResponse.class);
+        } catch (Exception e) {
+            throw new GeneralException(ErrorCode.PAYMENT_FAILED);
+        }
     }
 
     @Transactional
@@ -115,8 +127,13 @@ public class PaymentService {
         parameters.put("vat_amount", "200");
         parameters.put("tax_free_amount", "0");
 
-        PaymentDto.KakaoApproveResponse response = restTemplateUtil.post(SUBSCRIBE_URL, parameters, getHeaders(),
-                PaymentDto.KakaoApproveResponse.class);
+        PaymentDto.KakaoApproveResponse response;
+        try {
+            response = restTemplateUtil.post(SUBSCRIBE_URL, parameters, getHeaders(),
+                    PaymentDto.KakaoApproveResponse.class);
+        } catch (Exception e) {
+            throw new GeneralException(ErrorCode.PAYMENT_FAILED);
+        }
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND));
@@ -139,9 +156,14 @@ public class PaymentService {
         parameters.put("cid", cid);
         parameters.put("sid", sid);
 
-        PaymentDto.KakaoSubscribeCancelResponse response = restTemplateUtil.post(SUBSCRIBE_CANCEL_URL, parameters,
-                getHeaders(),
-                PaymentDto.KakaoSubscribeCancelResponse.class);
+        PaymentDto.KakaoSubscribeCancelResponse response;
+        try {
+            response = restTemplateUtil.post(SUBSCRIBE_CANCEL_URL, parameters,
+                    getHeaders(),
+                    PaymentDto.KakaoSubscribeCancelResponse.class);
+        } catch (Exception e) {
+            throw new GeneralException(ErrorCode.EXTERNAL_API_ERROR);
+        }
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND));
@@ -159,8 +181,12 @@ public class PaymentService {
         parameters.put("cid", cid);
         parameters.put("sid", sid);
 
-        return restTemplateUtil.post(SUBSCRIBE_STATUS_URL, parameters, getHeaders(),
-                PaymentDto.KakaoSubscribeStatusResponse.class);
+        try {
+            return restTemplateUtil.post(SUBSCRIBE_STATUS_URL, parameters, getHeaders(),
+                    PaymentDto.KakaoSubscribeStatusResponse.class);
+        } catch (Exception e) {
+            throw new GeneralException(ErrorCode.EXTERNAL_API_ERROR);
+        }
     }
 
     @Transactional(readOnly = true)
