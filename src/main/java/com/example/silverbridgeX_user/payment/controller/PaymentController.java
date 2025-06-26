@@ -143,10 +143,8 @@ public class PaymentController {
     ) {
         Long userId = userService.findByUserName(customUserDetails.getUsername()).getId();
 
-        Payment kakaoPay = paymentService.getKakaoPayInfo(userId);
-
         PaymentDto.KakaoSubscribeCancelResponse kakaoSubscribeCancelResponse = paymentService.subscribeCancelResponse(
-                kakaoPay.getSid());
+                userId);
 
         return ApiResponse.onSuccess(SuccessCode.PAYMENT_URL_CREATE_SUCCESS, kakaoSubscribeCancelResponse);
     }
@@ -158,10 +156,8 @@ public class PaymentController {
     ) {
         Long userId = userService.findByUserName(key).getId();
 
-        Payment kakaoPay = paymentService.getKakaoPayInfo(userId);
-
         PaymentDto.KakaoSubscribeCancelResponse kakaoSubscribeCancelResponse = paymentService.subscribeCancelResponse(
-                kakaoPay.getSid());
+                userId);
 
         return ApiResponse.onSuccess(SuccessCode.PAYMENT_URL_CREATE_SUCCESS, kakaoSubscribeCancelResponse);
     }

@@ -58,6 +58,8 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "guardian", cascade = CascadeType.ALL)
     private List<User> olders = new ArrayList<>();
 
+    private Boolean isSubscribed;
+
     private String sex;
 
     private LocalDate birth;
@@ -116,6 +118,18 @@ public class User extends BaseEntity {
 
     public void updateGuardian(User guardian) {
         this.guardian = guardian; // null 가능
+    }
+
+    public Boolean isSubscribeActive() {
+        return isSubscribed;
+    }
+
+    public void enableSubscription() {
+        this.isSubscribed = true;
+    }
+
+    public void disableSubscription() {
+        this.isSubscribed = false;
     }
 }
 
