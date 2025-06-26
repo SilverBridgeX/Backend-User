@@ -28,7 +28,6 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final UserRepository userRepository;
     private final RestTemplateUtil restTemplateUtil;
-    private PaymentDto.KakaoReadyResponse kakaoReadyResponse;
 
     @Value("${kakaopay.secret_key}")
     private String secretKey;
@@ -52,7 +51,7 @@ public class PaymentService {
         return httpHeaders;
     }
 
-    public PaymentDto.KakaoReadyResponse kakaoPayReady() {
+    public PaymentDto.KakaoReadyResponse kakaoPayReady(Long userId) {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("cid", cid);
         parameters.put("partner_order_id", "ORDER_ID");
@@ -62,17 +61,21 @@ public class PaymentService {
         parameters.put("total_amount", "9900");
         parameters.put("vat_amount", "200");
         parameters.put("tax_free_amount", "0");
-        parameters.put("approval_url", "http://15.165.17.95/user/payment/success");
+        parameters.put("approval_url", "http://15.165.17.95/user/payment/success?userId=" + userId);
         parameters.put("fail_url", "http://15.165.17.95/user/payment/fail");
         parameters.put("cancel_url", "http://15.165.17.95/user/payment/cancel");
 
         return restTemplateUtil.post(READY_URL, parameters, getHeaders(), PaymentDto.KakaoReadyResponse.class);
     }
 
-    public PaymentDto.KakaoApproveResponse approveResponse(String pgToken) {
+    public PaymentDto.KakaoApproveResponse approveResponse(String pgToken, Long userId) {
+        Payment payment = paymentRepository.getLatestKakaoPayInfo(userId)
+                .orElseThrow(() -> GeneralException.of(ErrorCode.TID_NOT_EXIST));
+        String tid = payment.getTid();
+
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("cid", cid);
-        parameters.put("tid", kakaoReadyResponse.getTid());
+        parameters.put("tid", tid);
         parameters.put("partner_order_id", "ORDER_ID");
         parameters.put("partner_user_id", "USER_ID");
         parameters.put("pg_token", pgToken);
@@ -141,20 +144,20 @@ public class PaymentService {
     }
 
     public Payment getKakaoPayInfo(Long userId) {
-        Payment kakaoPay = paymentRepository.findByUser_Id(userId)
+        Payment kakaoPay = paymentRepository.getLatestKakaoPayInfo(userId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.TID_NOT_EXIST));
 
         return kakaoPay;
     }
 
     public boolean existKakaoPayLog(Long userId) {
-        return paymentRepository.existsByUser_Id(userId);
+        return paymentRepository.existsByUserId(userId);
     }
 
     public void saveTid(Long userId, String tid) {
         Payment kakaoPay;
-        if (paymentRepository.existsByUser_Id(userId)) {
-            kakaoPay = paymentRepository.findByUser_Id(userId)
+        if (paymentRepository.existsByUserId(userId)) {
+            kakaoPay = paymentRepository.getLatestKakaoPayInfo(userId)
                     .orElseThrow(() -> new GeneralException(ErrorCode.TID_SID_UNSUPPORTED));
             kakaoPay.updateTid(tid);
         } else {
@@ -177,8 +180,8 @@ public class PaymentService {
 
     public void savePayInfo(Long userId, PaymentDto.KakaoApproveResponse kakaoApproveResponse) {
         Payment kakaoPay;
-        if (paymentRepository.existsByUser_Id(userId)) {
-            kakaoPay = paymentRepository.findByUser_Id(userId)
+        if (paymentRepository.existsByUserId(userId)) {
+            kakaoPay = paymentRepository.getLatestKakaoPayInfo(userId)
                     .orElseThrow(() -> new GeneralException(ErrorCode.TID_SID_UNSUPPORTED));
             kakaoPay.updatePayInfo(kakaoApproveResponse.getTid(), kakaoApproveResponse.getSid());
         } else {
@@ -191,7 +194,7 @@ public class PaymentService {
     }
 
     public void cancelPay(Long userId) {
-        Payment kakaoPay = paymentRepository.findByUser_Id(userId)
+        Payment kakaoPay = paymentRepository.getLatestKakaoPayInfo(userId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.TID_NOT_EXIST));
 
         paymentRepository.delete(kakaoPay);

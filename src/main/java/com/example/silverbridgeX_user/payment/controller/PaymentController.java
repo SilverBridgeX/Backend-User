@@ -30,9 +30,9 @@ public class PaymentController {
     public ApiResponse<PaymentDto.KakaoReadyResponse> readyToKakaoPay(
             @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
-        PaymentDto.KakaoReadyResponse kakaoReadyResponse = paymentService.kakaoPayReady();
-
         Long userId = userService.findByUserName(customUserDetails.getUsername()).getId();
+
+        PaymentDto.KakaoReadyResponse kakaoReadyResponse = paymentService.kakaoPayReady(userId);
 
         paymentService.saveTid(userId, kakaoReadyResponse.getTid());
 
@@ -44,9 +44,9 @@ public class PaymentController {
     public ApiResponse<PaymentDto.KakaoReadyResponse> readyToKakaoPay(
             @RequestParam("id") String key
     ) {
-        PaymentDto.KakaoReadyResponse kakaoReadyResponse = paymentService.kakaoPayReady();
-
         Long userId = userService.findByUserName(key).getId();
+
+        PaymentDto.KakaoReadyResponse kakaoReadyResponse = paymentService.kakaoPayReady(userId);
 
         paymentService.saveTid(userId, kakaoReadyResponse.getTid());
 
@@ -55,9 +55,9 @@ public class PaymentController {
 
     @GetMapping("/success")
     public ModelAndView afterPayRequest(
-            @RequestParam("pg_token") String pgToken
+            @RequestParam("pg_token") String pgToken, @RequestParam("userId") Long userId
     ) {
-        PaymentDto.KakaoApproveResponse kakaoApproveResponse = paymentService.approveResponse(pgToken);
+        PaymentDto.KakaoApproveResponse kakaoApproveResponse = paymentService.approveResponse(pgToken, userId);
 
         ModelAndView modelAndView = new ModelAndView("success"); // "success"는 템플릿 파일 이름
         modelAndView.addObject("paymentInfo", kakaoApproveResponse);
