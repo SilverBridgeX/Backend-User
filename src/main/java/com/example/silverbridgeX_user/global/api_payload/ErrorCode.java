@@ -37,6 +37,7 @@ public enum ErrorCode implements BaseCode {
     TID_NOT_EXIST(HttpStatus.BAD_REQUEST, "PAYMENT_4001", "tid가 존재하지 않습니다."),
     TID_SID_UNSUPPORTED(HttpStatus.BAD_REQUEST, "PAYMENT_4002", "지원되지 않는 tid, sid 입니다."),
     SID_NOT_EXIST(HttpStatus.BAD_REQUEST, "PAYMENT_4003", "sid가 존재하지 않습니다."),
+    TID_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "PAYMENT_4004", "tid가 이미 존재합니다."),
 
     // Match
     MATCH_NOT_EXIST(HttpStatus.BAD_REQUEST, "MATCH_4001", "매치 신청 정보가 존재하지 않습니다."),

@@ -177,6 +177,10 @@ public class PaymentService {
 
     @Transactional
     public void saveTid(Long userId, String tid) {
+        if (paymentRepository.existsByTid(tid)) {
+            throw new GeneralException(ErrorCode.TID_ALREADY_EXIST);
+        }
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND));
 

@@ -13,6 +13,8 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     Optional<Payment> findByTid(String tid);
 
+    boolean existsByTid(String tid);
+
     @Query("SELECT k FROM Payment k JOIN FETCH k.user WHERE k.sid IS NOT NULL")
     List<Payment> findAllWithMemberAndSidNotNull();
 
