@@ -55,7 +55,7 @@ public class PaymentService {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("cid", cid);
         parameters.put("partner_order_id", "ORDER_ID");
-        parameters.put("partner_user_id", "USER_ID");
+        parameters.put("partner_user_id", String.valueOf(userId));
         parameters.put("item_name", "은빛동행 구독");
         parameters.put("quantity", "1");
         parameters.put("total_amount", "9900");
@@ -98,7 +98,7 @@ public class PaymentService {
         return restTemplateUtil.post(CANCEL_URL, parameters, getHeaders(), PaymentDto.KakaoCancelResponse.class);
     }
 
-    public PaymentDto.KakaoApproveResponse approveSubscribeResponse(String sid) {
+    public PaymentDto.KakaoApproveResponse approveSubscribeResponse(String sid, Long userId) {
         if (sid == null || sid.isEmpty()) {
             throw new GeneralException(ErrorCode.SID_NOT_EXIST);
         }
@@ -107,7 +107,7 @@ public class PaymentService {
         parameters.put("cid", cid);
         parameters.put("sid", sid);
         parameters.put("partner_order_id", "ORDER_ID");
-        parameters.put("partner_user_id", "USER_ID");
+        parameters.put("partner_user_id", String.valueOf(userId));
         parameters.put("item_name", "BodyCheck 구독");
         parameters.put("quantity", "1");
         parameters.put("total_amount", "4900");
@@ -155,16 +155,11 @@ public class PaymentService {
     }
 
     public void saveTid(Long userId, String tid) {
-        Payment kakaoPay;
-        if (paymentRepository.existsByUserId(userId)) {
-            kakaoPay = paymentRepository.getLatestKakaoPayInfo(userId)
-                    .orElseThrow(() -> new GeneralException(ErrorCode.TID_SID_UNSUPPORTED));
-            kakaoPay.updateTid(tid);
-        } else {
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND));
-            kakaoPay = PaymentConverter.toKakaoPayTid(tid, user);
-        }
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND));
+
+        Payment kakaoPay = PaymentConverter.toKakaoPayTid(tid, user);
+
         paymentRepository.save(kakaoPay);
     }
 
@@ -179,17 +174,11 @@ public class PaymentService {
     }
 
     public void savePayInfo(Long userId, PaymentDto.KakaoApproveResponse kakaoApproveResponse) {
-        Payment kakaoPay;
-        if (paymentRepository.existsByUserId(userId)) {
-            kakaoPay = paymentRepository.getLatestKakaoPayInfo(userId)
-                    .orElseThrow(() -> new GeneralException(ErrorCode.TID_SID_UNSUPPORTED));
-            kakaoPay.updatePayInfo(kakaoApproveResponse.getTid(), kakaoApproveResponse.getSid());
-        } else {
-            User member = userRepository.findById(userId)
-                    .orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND));
-            kakaoPay = PaymentConverter.toKakaoPay(kakaoApproveResponse.getTid(), kakaoApproveResponse.getSid(),
-                    member);
-        }
+        User member = userRepository.findById(userId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND));
+        Payment kakaoPay = PaymentConverter.toKakaoPay(kakaoApproveResponse.getTid(), kakaoApproveResponse.getSid(),
+                member);
+
         paymentRepository.save(kakaoPay);
     }
 
@@ -228,7 +217,7 @@ public class PaymentService {
                                             || today.getMonthValue() != lastApprovedAt.getMonthValue())) {
 
                                 PaymentDto.KakaoApproveResponse approveResponse = approveSubscribeResponse(
-                                        kakaoPay.getSid());
+                                        kakaoPay.getSid(), kakaoPay.getUser().getId());
 
                                 savePayInfo(kakaoPay.getUser().getId(), approveResponse);
                             }

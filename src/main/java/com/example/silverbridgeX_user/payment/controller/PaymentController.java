@@ -113,7 +113,7 @@ public class PaymentController {
         Payment kakaoPay = paymentService.getKakaoPayInfo(userId);
 
         PaymentDto.KakaoApproveResponse kakaoApproveResponse = paymentService.approveSubscribeResponse(
-                kakaoPay.getSid());
+                kakaoPay.getSid(), userId);
 
         paymentService.savePayInfo(userId, kakaoApproveResponse);
 
@@ -129,7 +129,7 @@ public class PaymentController {
         Payment kakaoPay = paymentService.getKakaoPayInfo(userId);
 
         PaymentDto.KakaoApproveResponse kakaoApproveResponse = paymentService.approveSubscribeResponse(
-                kakaoPay.getSid());
+                kakaoPay.getSid(), userId);
 
         paymentService.savePayInfo(userId, kakaoApproveResponse);
 
