@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;
@@ -68,6 +67,7 @@ public class PaymentService {
         return restTemplateUtil.post(READY_URL, parameters, getHeaders(), PaymentDto.KakaoReadyResponse.class);
     }
 
+    @Transactional(readOnly = true)
     public PaymentDto.KakaoApproveResponse approveResponse(String pgToken, Long userId) {
         Payment payment = paymentRepository.getLatestKakaoPayInfo(userId)
                 .orElseThrow(() -> GeneralException.of(ErrorCode.TID_NOT_EXIST));
@@ -98,6 +98,7 @@ public class PaymentService {
         return restTemplateUtil.post(CANCEL_URL, parameters, getHeaders(), PaymentDto.KakaoCancelResponse.class);
     }
 
+    @Transactional
     public PaymentDto.KakaoApproveResponse approveSubscribeResponse(String sid, Long userId) {
         if (sid == null || sid.isEmpty()) {
             throw new GeneralException(ErrorCode.SID_NOT_EXIST);
@@ -162,7 +163,7 @@ public class PaymentService {
                 PaymentDto.KakaoSubscribeStatusResponse.class);
     }
 
-
+    @Transactional(readOnly = true)
     public Payment getKakaoPayInfo(Long userId) {
         Payment kakaoPay = paymentRepository.getLatestKakaoPayInfo(userId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.TID_NOT_EXIST));
@@ -213,6 +214,7 @@ public class PaymentService {
         paymentRepository.delete(kakaoPay);
     }
 
+    @Transactional(readOnly = true)
     public PaymentDto.KakaoPayStatus getSubscribeStatus(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND));
