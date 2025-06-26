@@ -120,7 +120,7 @@ public class PaymentService {
         return kakaoPay;
     }
 
-    public boolean getKakaoPayLog(Long userId) {
+    public boolean existKakaoPayLog(Long userId) {
         return paymentRepository.existsByUser_Id(userId);
     }
 
@@ -316,4 +316,21 @@ public class PaymentService {
                     }
                 });
     }
+
+    public PaymentDto.KakaoPayStatus getSubscribeStatus(Long userId) {
+        boolean isLogExist = false;
+        PaymentDto.KakaoSubscribeStatusResponse kakaoSubscribeStatusResponse = new PaymentDto.KakaoSubscribeStatusResponse();
+
+        if (existKakaoPayLog(userId)) {
+            Payment kakaoPay = getKakaoPayInfo(userId);
+
+            if (kakaoPay.getSid() != null && !kakaoPay.getSid().isEmpty()) {
+                isLogExist = true;
+                kakaoSubscribeStatusResponse = subscribeStatusResponse(kakaoPay.getSid());
+            }
+        }
+
+        return PaymentConverter.toKakaoPayStatus(isLogExist, kakaoSubscribeStatusResponse);
+    }
+
 }
