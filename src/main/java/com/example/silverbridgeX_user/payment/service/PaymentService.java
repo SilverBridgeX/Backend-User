@@ -72,7 +72,7 @@ public class PaymentService {
         }
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public PaymentDto.KakaoApproveResponse approveResponse(String pgToken, Long userId) {
         Payment payment = paymentRepository.getLatestKakaoPayInfo(userId)
                 .orElseThrow(() -> GeneralException.of(ErrorCode.TID_NOT_EXIST));
@@ -218,9 +218,7 @@ public class PaymentService {
         Payment kakaoPay = paymentRepository.findTopByTidOrderByIdDesc(kakaoApproveResponse.getTid())
                 .orElseThrow(() -> new GeneralException(ErrorCode.TID_NOT_EXIST));
 
-        kakaoPay.updateSid(kakaoApproveResponse.getSid());
-
-        paymentRepository.save(kakaoPay);
+        kakaoPay.updateSid(kakaoApproveResponse.getSid()); // jpa에서 영속 상태의 엔티티는 setter 호출만해도 dirty checking 반영됨
     }
 
     @Transactional
@@ -258,6 +256,7 @@ public class PaymentService {
         // 4. 결제 정보가 없거나, sid가 없으면 → 구독 비활성화 처리 후 구독 X 상태 리턴
         if (optionalKakaoPay.isEmpty() || optionalKakaoPay.get().getSid() == null || optionalKakaoPay.get().getSid()
                 .isEmpty()) {
+            // 추후 결제 취소가 안되었는데 이전 sid가 없다 -> 이전 정기결제 실패 -> 재시도 로직 수가 에정
             user.disableSubscription();
             return PaymentConverter.toKakaoPayStatus(false, new PaymentDto.KakaoSubscribeStatusResponse());
         }
