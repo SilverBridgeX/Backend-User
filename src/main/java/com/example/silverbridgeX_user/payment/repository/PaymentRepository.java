@@ -15,6 +15,5 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     @Query("SELECT k FROM Payment k JOIN FETCH k.user WHERE k.sid IS NOT NULL")
     List<Payment> findAllWithMemberAndSidNotNull();
 
-    @Query("SELECT p FROM Payment p WHERE p.user.id = :userId ORDER BY p.createdAt DESC")
     Optional<Payment> findTopByUserIdOrderByIdDesc(@Param("userId") Long userId);
 }
