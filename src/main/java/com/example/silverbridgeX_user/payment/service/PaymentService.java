@@ -2,44 +2,45 @@ package com.example.silverbridgeX_user.payment.service;
 
 import com.example.silverbridgeX_user.global.api_payload.ErrorCode;
 import com.example.silverbridgeX_user.global.exception.GeneralException;
+import com.example.silverbridgeX_user.global.util.RestTemplateUtil;
 import com.example.silverbridgeX_user.payment.converter.PaymentConverter;
 import com.example.silverbridgeX_user.payment.domain.Payment;
 import com.example.silverbridgeX_user.payment.dto.PaymentDto;
 import com.example.silverbridgeX_user.payment.repository.PaymentRepository;
 import com.example.silverbridgeX_user.user.domain.User;
 import com.example.silverbridgeX_user.user.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
-
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
-@EnableScheduling
 public class PaymentService {
 
-    private RestTemplate restTemplate = new RestTemplate();
-    private PaymentDto.KakaoReadyResponse kakaoReadyResponse;
     private final PaymentRepository paymentRepository;
     private final UserRepository userRepository;
+    private final RestTemplateUtil restTemplateUtil;
 
     @Value("${kakaopay.secret_key}")
     private String secretKey;
 
     @Value("${kakaopay.cid}")
     private String cid;
+
+    public static final String BASE_URL = "https://open-api.kakaopay.com/online/v1/payment";
+    public static final String READY_URL = BASE_URL + "/ready";
+    public static final String APPROVE_URL = BASE_URL + "/approve";
+    public static final String CANCEL_URL = BASE_URL + "/cancel";
+    public static final String SUBSCRIBE_URL = BASE_URL + "/subscription";
+    public static final String SUBSCRIBE_STATUS_URL = BASE_URL + "/manage/subscription/status";
+    public static final String SUBSCRIBE_CANCEL_URL = BASE_URL + "/manage/subscription/inactive";
 
     private HttpHeaders getHeaders() {
         HttpHeaders httpHeaders = new HttpHeaders();
@@ -49,46 +50,45 @@ public class PaymentService {
         return httpHeaders;
     }
 
-    public PaymentDto.KakaoReadyResponse kakaoPayReady() {
+    public PaymentDto.KakaoReadyResponse kakaoPayReady(Long userId) {
         Map<String, Object> parameters = new HashMap<>();
-
         parameters.put("cid", cid);
         parameters.put("partner_order_id", "ORDER_ID");
-        parameters.put("partner_user_id", "USER_ID");
+        parameters.put("partner_user_id", String.valueOf(userId));
         parameters.put("item_name", "은빛동행 구독");
         parameters.put("quantity", "1");
         parameters.put("total_amount", "9900");
         parameters.put("vat_amount", "200");
         parameters.put("tax_free_amount", "0");
-        parameters.put("approval_url", "http://15.165.17.95/user/payment/success"); // http://15.165.17.95/user/payment/success http://localhost:8080/payment/success
-        parameters.put("fail_url", "http://15.165.17.95/user/payment/fail"); // http://15.165.17.95/user/payment/fail http://localhost:8080/payment/fail
-        parameters.put("cancel_url", "http://15.165.17.95/user/payment/cancel"); // http://15.165.17.95/user/payment/cancel http://localhost:8080/payment/cancel
+        parameters.put("approval_url", "http://15.165.17.95/user/payment/success?userId=" + userId);
+        parameters.put("fail_url", "http://15.165.17.95/user/payment/fail");
+        parameters.put("cancel_url", "http://15.165.17.95/user/payment/cancel");
 
-
-        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(parameters, this.getHeaders());
-
-        kakaoReadyResponse = restTemplate.postForObject(
-                "https://open-api.kakaopay.com/online/v1/payment/ready",
-                requestEntity,
-                PaymentDto.KakaoReadyResponse.class);
-        return kakaoReadyResponse;
+        try {
+            return restTemplateUtil.post(READY_URL, parameters, getHeaders(), PaymentDto.KakaoReadyResponse.class);
+        } catch (Exception e) {
+            throw new GeneralException(ErrorCode.EXTERNAL_API_ERROR);
+        }
     }
 
-    public PaymentDto.KakaoApproveResponse approveResponse(String pgToken) {
+    @Transactional(readOnly = true)
+    public PaymentDto.KakaoApproveResponse approveResponse(String pgToken, Long userId) {
+        Payment payment = paymentRepository.getLatestKakaoPayInfo(userId)
+                .orElseThrow(() -> GeneralException.of(ErrorCode.TID_NOT_EXIST));
+        String tid = payment.getTid();
+
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("cid", cid);
-        parameters.put("tid", kakaoReadyResponse.getTid());
+        parameters.put("tid", tid);
         parameters.put("partner_order_id", "ORDER_ID");
         parameters.put("partner_user_id", "USER_ID");
         parameters.put("pg_token", pgToken);
 
-        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(parameters, this.getHeaders());
-
-        PaymentDto.KakaoApproveResponse kakaoApproveResponse = restTemplate.postForObject(
-                "https://open-api.kakaopay.com/online/v1/payment/approve",
-                requestEntity,
-                PaymentDto.KakaoApproveResponse.class);
-        return kakaoApproveResponse;
+        try {
+            return restTemplateUtil.post(APPROVE_URL, parameters, getHeaders(), PaymentDto.KakaoApproveResponse.class);
+        } catch (Exception e) {
+            throw new GeneralException(ErrorCode.PAYMENT_FAILED);
+        }
     }
 
     public PaymentDto.KakaoCancelResponse cancelResponse(String tid) {
@@ -103,73 +103,15 @@ public class PaymentService {
         parameters.put("cancel_tax_free_amount", "0");
         parameters.put("cancel_vat_amount", "0");
 
-        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(parameters, this.getHeaders());
-
-        PaymentDto.KakaoCancelResponse kakaoCancelResponse = restTemplate.postForObject(
-                "https://open-api.kakaopay.com/online/v1/payment/cancel",
-                requestEntity,
-                PaymentDto.KakaoCancelResponse.class);
-        return kakaoCancelResponse;
-    }
-
-    public Payment getKakaoPayInfo(Long userId) {
-        Payment kakaoPay =  paymentRepository.findByUser_Id(userId).orElseThrow(() -> new GeneralException(ErrorCode.TID_NOT_EXIST));
-
-        return kakaoPay;
-    }
-
-    public boolean getKakaoPayLog(Long userId) {
-        return paymentRepository.existsByUser_Id(userId);
-    }
-
-    public boolean getPremiumState(Long userId) {
-        boolean isPremium = false;
-
-        if (paymentRepository.existsByUser_Id(userId)) {
-            Payment kakaoPay =  paymentRepository.findByUser_Id(userId).orElseThrow(() -> new GeneralException(ErrorCode.TID_NOT_EXIST));
-
-            if (kakaoPay.getSid() == null || kakaoPay.getSid().isEmpty()) {}
-            else {
-                Map<String, Object> parameters = new HashMap<>();
-                parameters.put("cid", cid);
-                parameters.put("sid", kakaoPay.getSid());
-
-                HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(parameters, this.getHeaders());
-
-                PaymentDto.KakaoSubscribeStatusResponse kakaoSubscribeStatusResponse = restTemplate.postForObject(
-                        "https://open-api.kakaopay.com/online/v1/payment/manage/subscription/status",
-                        requestEntity,
-                        PaymentDto.KakaoSubscribeStatusResponse.class);
-
-                if (kakaoSubscribeStatusResponse.getStatus().equals("ACTIVE")) {
-                    isPremium = true;
-                }
-                else {
-                    String last_approved_at;
-                    if(kakaoSubscribeStatusResponse.getLast_approved_at() == null || kakaoSubscribeStatusResponse.getLast_approved_at().isEmpty()) {
-                        last_approved_at = kakaoSubscribeStatusResponse.getCreated_at();
-                    }
-                    else last_approved_at = kakaoSubscribeStatusResponse.getLast_approved_at();
-
-                    DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-                    LocalDateTime lastApprovedAt = LocalDateTime.parse(last_approved_at, formatter);
-
-                    LocalDateTime oneMonthLater = lastApprovedAt.plusMonths(1).withHour(14).withMinute(0).withSecond(0);
-
-                    LocalDateTime now = LocalDateTime.now();
-
-                    if (now.isBefore(oneMonthLater)) {
-                        isPremium = true;
-                    }
-                }
-            }
-
+        try {
+            return restTemplateUtil.post(CANCEL_URL, parameters, getHeaders(), PaymentDto.KakaoCancelResponse.class);
+        } catch (Exception e) {
+            throw new GeneralException(ErrorCode.PAYMENT_FAILED);
         }
-
-        return isPremium;
     }
 
-    public PaymentDto.KakaoApproveResponse approveSubscribeResponse(String sid) {
+    @Transactional
+    public PaymentDto.KakaoApproveResponse approveSubscribeResponse(String sid, Long userId) {
         if (sid == null || sid.isEmpty()) {
             throw new GeneralException(ErrorCode.SID_NOT_EXIST);
         }
@@ -178,23 +120,34 @@ public class PaymentService {
         parameters.put("cid", cid);
         parameters.put("sid", sid);
         parameters.put("partner_order_id", "ORDER_ID");
-        parameters.put("partner_user_id", "USER_ID");
+        parameters.put("partner_user_id", String.valueOf(userId));
         parameters.put("item_name", "BodyCheck 구독");
         parameters.put("quantity", "1");
         parameters.put("total_amount", "4900");
         parameters.put("vat_amount", "200");
         parameters.put("tax_free_amount", "0");
 
-        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(parameters, this.getHeaders());
+        PaymentDto.KakaoApproveResponse response;
+        try {
+            response = restTemplateUtil.post(SUBSCRIBE_URL, parameters, getHeaders(),
+                    PaymentDto.KakaoApproveResponse.class);
+        } catch (Exception e) {
+            throw new GeneralException(ErrorCode.PAYMENT_FAILED);
+        }
 
-        PaymentDto.KakaoApproveResponse kakaoApproveResponse = restTemplate.postForObject(
-                "https://open-api.kakaopay.com/online/v1/payment/subscription",
-                requestEntity,
-                PaymentDto.KakaoApproveResponse.class);
-        return kakaoApproveResponse;
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND));
+        user.enableSubscription();
+
+        return response;
     }
 
-    public PaymentDto.KakaoSubscribeCancelResponse subscribeCancelResponse(String sid) {
+    @Transactional
+    public PaymentDto.KakaoSubscribeCancelResponse subscribeCancelResponse(Long userId) {
+        Payment kakaoPay = paymentRepository.getLatestKakaoPayInfo(userId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.TID_NOT_EXIST));
+
+        String sid = kakaoPay.getSid();
         if (sid == null || sid.isEmpty()) {
             throw new GeneralException(ErrorCode.SID_NOT_EXIST);
         }
@@ -203,13 +156,20 @@ public class PaymentService {
         parameters.put("cid", cid);
         parameters.put("sid", sid);
 
-        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(parameters, this.getHeaders());
+        PaymentDto.KakaoSubscribeCancelResponse response;
+        try {
+            response = restTemplateUtil.post(SUBSCRIBE_CANCEL_URL, parameters,
+                    getHeaders(),
+                    PaymentDto.KakaoSubscribeCancelResponse.class);
+        } catch (Exception e) {
+            throw new GeneralException(ErrorCode.EXTERNAL_API_ERROR);
+        }
 
-        PaymentDto.KakaoSubscribeCancelResponse kakaoSubscribeCancelResponse = restTemplate.postForObject(
-                "https://open-api.kakaopay.com/online/v1/payment/manage/subscription/inactive",
-                requestEntity,
-                PaymentDto.KakaoSubscribeCancelResponse.class);
-        return kakaoSubscribeCancelResponse;
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND));
+        user.disableSubscription();
+
+        return response;
     }
 
     public PaymentDto.KakaoSubscribeStatusResponse subscribeStatusResponse(String sid) {
@@ -221,94 +181,127 @@ public class PaymentService {
         parameters.put("cid", cid);
         parameters.put("sid", sid);
 
-        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(parameters, this.getHeaders());
-
-        PaymentDto.KakaoSubscribeStatusResponse kakaoSubscribeStatusResponse = restTemplate.postForObject(
-                "https://open-api.kakaopay.com/online/v1/payment/manage/subscription/status",
-                requestEntity,
-                PaymentDto.KakaoSubscribeStatusResponse.class);
-        return kakaoSubscribeStatusResponse;
+        try {
+            return restTemplateUtil.post(SUBSCRIBE_STATUS_URL, parameters, getHeaders(),
+                    PaymentDto.KakaoSubscribeStatusResponse.class);
+        } catch (Exception e) {
+            throw new GeneralException(ErrorCode.EXTERNAL_API_ERROR);
+        }
     }
 
+    @Transactional(readOnly = true)
+    public Payment getKakaoPayInfo(Long userId) {
+        Payment kakaoPay = paymentRepository.getLatestKakaoPayInfo(userId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.TID_NOT_EXIST));
+
+        return kakaoPay;
+    }
+
+    @Transactional
     public void saveTid(Long userId, String tid) {
-        Payment kakaoPay;
-        if (paymentRepository.existsByUser_Id(userId)) {
-            kakaoPay = paymentRepository.findByUser_Id(userId).orElseThrow(() -> new GeneralException(ErrorCode.TID_SID_UNSUPPORTED));
-            kakaoPay.updateTid(tid);
+        if (paymentRepository.existsByTid(tid)) {
+            throw new GeneralException(ErrorCode.TID_ALREADY_EXIST);
         }
-        else {
-            User user = userRepository.findById(userId).orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND));
-            kakaoPay = PaymentConverter.toKakaoPayTid(tid, user);
-        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND));
+
+        Payment kakaoPay = PaymentConverter.toKakaoPayTid(tid, user);
+
         paymentRepository.save(kakaoPay);
     }
 
+    @Transactional
     public void saveSid(PaymentDto.KakaoApproveResponse kakaoApproveResponse) {
 
-        Payment kakaoPay = paymentRepository.findByTid(kakaoApproveResponse.getTid()).orElseThrow(() -> new GeneralException(ErrorCode.TID_NOT_EXIST));
+        Payment kakaoPay = paymentRepository.findByTid(kakaoApproveResponse.getTid())
+                .orElseThrow(() -> new GeneralException(ErrorCode.TID_NOT_EXIST));
 
         kakaoPay.updateSid(kakaoApproveResponse.getSid());
 
         paymentRepository.save(kakaoPay);
     }
 
+    @Transactional
     public void savePayInfo(Long userId, PaymentDto.KakaoApproveResponse kakaoApproveResponse) {
-        Payment kakaoPay;
-        if (paymentRepository.existsByUser_Id(userId)) {
-            kakaoPay = paymentRepository.findByUser_Id(userId).orElseThrow(() -> new GeneralException(ErrorCode.TID_SID_UNSUPPORTED));
-            kakaoPay.updatePayInfo(kakaoApproveResponse.getTid(), kakaoApproveResponse.getSid());
-        }
-        else {
-            User member = userRepository.findById(userId).orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND));
-            kakaoPay = PaymentConverter.toKakaoPay(kakaoApproveResponse.getTid(), kakaoApproveResponse.getSid(), member);
-        }
+        User member = userRepository.findById(userId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND));
+        Payment kakaoPay = PaymentConverter.toKakaoPay(kakaoApproveResponse.getTid(), kakaoApproveResponse.getSid(),
+                member);
+
         paymentRepository.save(kakaoPay);
     }
 
+    @Transactional
     public void cancelPay(Long userId) {
-        Payment kakaoPay = paymentRepository.findByUser_Id(userId).orElseThrow(() -> new GeneralException(ErrorCode.TID_NOT_EXIST));
+        Payment kakaoPay = paymentRepository.getLatestKakaoPayInfo(userId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.TID_NOT_EXIST));
 
         paymentRepository.delete(kakaoPay);
     }
 
+    @Transactional(readOnly = true)
+    public PaymentDto.KakaoPayStatus getSubscribeStatus(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND));
+
+        if (!user.isSubscribeActive()) {
+            return PaymentConverter.toKakaoPayStatus(false, new PaymentDto.KakaoSubscribeStatusResponse());
+        }
+
+        Payment kakaoPay = getKakaoPayInfo(userId);
+
+        if (kakaoPay.getSid() != null && !kakaoPay.getSid().isEmpty()) {
+            PaymentDto.KakaoSubscribeStatusResponse kakaoSubscribeStatusResponse = subscribeStatusResponse(
+                    kakaoPay.getSid());
+            return PaymentConverter.toKakaoPayStatus(true, kakaoSubscribeStatusResponse);
+        }
+
+        return PaymentConverter.toKakaoPayStatus(false, new PaymentDto.KakaoSubscribeStatusResponse());
+    }
+
+    @Transactional
     public void regularPayment() {
         List<Payment> kakaoPayList = paymentRepository.findAllWithMemberAndSidNotNull();
 
         kakaoPayList.stream()
                 .forEach(kakaoPay -> {
                     if (kakaoPay.getSid() != null && !kakaoPay.getSid().isEmpty()) {
-                        PaymentDto.KakaoSubscribeStatusResponse kakaoSubscribeStatusResponse = subscribeStatusResponse(kakaoPay.getSid());
+                        PaymentDto.KakaoSubscribeStatusResponse kakaoSubscribeStatusResponse = subscribeStatusResponse(
+                                kakaoPay.getSid());
 
-                        // "ACTIVE" 상태인지 확인
+                        // 사용자가 카카오 결제 내역 화면에서 직접 해지 요청을 한 경우, db에 대항 상황이 반영x
+                        // -> 결제 상태를 우리 DB에도 반영
+                        if (kakaoSubscribeStatusResponse.getStatus().equals("INACTIVE")) {
+                            kakaoPay.getUser().disableSubscription();
+                            return; // 결제 해지된 유저는 패스
+                        }
+
                         if (kakaoSubscribeStatusResponse.getStatus().equals("ACTIVE")) {
                             String lastApprovedAtStr = kakaoSubscribeStatusResponse.getLast_approved_at();
                             if (lastApprovedAtStr == null || lastApprovedAtStr.isEmpty()) {
                                 lastApprovedAtStr = kakaoSubscribeStatusResponse.getCreated_at();
                             }
 
-                            // last_approved_at을 LocalDate로 변환
                             DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
                             LocalDate lastApprovedAt = LocalDate.parse(lastApprovedAtStr, formatter);
 
                             LocalDate today = LocalDate.now();
 
-                            // 결제일과 오늘의 일(day)이 같고, 마지막 결제일이 이번 달이 아닌 경우에만 결제 수행
+                            // 결제일 + 새로운 달이 되었을 때 결제 요청
                             if (today.getDayOfMonth() == lastApprovedAt.getDayOfMonth() &&
-                                    (today.getYear() != lastApprovedAt.getYear() || today.getMonthValue() != lastApprovedAt.getMonthValue())) {
+                                    (today.getYear() != lastApprovedAt.getYear()
+                                            || today.getMonthValue() != lastApprovedAt.getMonthValue())) {
 
-                                PaymentDto.KakaoApproveResponse approveResponse = approveSubscribeResponse(kakaoPay.getSid());
+                                PaymentDto.KakaoApproveResponse approveResponse = approveSubscribeResponse(
+                                        kakaoPay.getSid(), kakaoPay.getUser().getId());
 
                                 savePayInfo(kakaoPay.getUser().getId(), approveResponse);
                             }
-//                            if (today.getDayOfMonth() == lastApprovedAt.getDayOfMonth()) {
-//                                KakaoPayDTO.KakaoApproveResponse approveResponse = approveSubscribeResponse(kakaoPay.getSid());
-//
-//                                savePayInfo(kakaoPay.getMember().getId(), approveResponse);
-//                            }
                         }
                     }
                 });
-
-//        System.out.println("정기 결제 작업 완료");
     }
+
+
 }

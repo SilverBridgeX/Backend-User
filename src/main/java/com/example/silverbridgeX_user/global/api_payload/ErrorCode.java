@@ -11,6 +11,8 @@ public enum ErrorCode implements BaseCode {
     // Common
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "COMMON_400", "잘못된 요청입니다."),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COMMON_500", "서버 에러, 서버 개발자에게 문의하세요."),
+    EXTERNAL_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "PAYMENT_5001", "외부 API 호출 중 오류가 발생했습니다."),
+
 
     // User
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_4041", "존재하지 않는 회원입니다."),
@@ -37,6 +39,8 @@ public enum ErrorCode implements BaseCode {
     TID_NOT_EXIST(HttpStatus.BAD_REQUEST, "PAYMENT_4001", "tid가 존재하지 않습니다."),
     TID_SID_UNSUPPORTED(HttpStatus.BAD_REQUEST, "PAYMENT_4002", "지원되지 않는 tid, sid 입니다."),
     SID_NOT_EXIST(HttpStatus.BAD_REQUEST, "PAYMENT_4003", "sid가 존재하지 않습니다."),
+    TID_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "PAYMENT_4004", "tid가 이미 존재합니다."),
+    PAYMENT_FAILED(HttpStatus.BAD_REQUEST, "PAYMENT_4005", "결제에 실패하였습니다."),
 
     // Match
     MATCH_NOT_EXIST(HttpStatus.BAD_REQUEST, "MATCH_4001", "매치 신청 정보가 존재하지 않습니다."),

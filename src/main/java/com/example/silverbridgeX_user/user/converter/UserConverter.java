@@ -18,6 +18,7 @@ public class UserConverter {
                 .username(key)
                 .nickname(userReqDto.getNickname())
                 .streetAddress(userReqDto.getStreetAddress())
+                .isSubscribed(false)
                 .build();
     }
 
