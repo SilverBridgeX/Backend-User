@@ -2,7 +2,7 @@ name: Deploy User Server To EC2
 
 on:
   pull_request:
-    types: [closed]
+    types: [ closed ]
   workflow_dispatch: # (2).수동 실행도 가능하도록
 
 jobs:
@@ -55,5 +55,6 @@ jobs:
           script_stop: true
           script: |
             echo '${{ secrets.ENV }}' > /home/ubuntu/.env.user
+            sed -i '/DRONE_SSH_PREV_COMMAND_EXIT_CODE/d' .env.user
             chmod +x /home/ubuntu/deploy.sh
             /home/ubuntu/deploy.sh
