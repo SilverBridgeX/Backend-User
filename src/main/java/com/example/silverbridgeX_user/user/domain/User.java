@@ -75,8 +75,8 @@ public class User extends BaseEntity {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private MatchRequest matchRequest;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private Payment payment;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Payment> payments = new ArrayList<>();
 
     @JdbcTypeCode(SqlTypes.JSON)
     private List<String> preferredKeywords;
