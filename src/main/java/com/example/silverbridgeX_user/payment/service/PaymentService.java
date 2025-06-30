@@ -120,7 +120,7 @@ public class PaymentService {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("cid", cid);
         parameters.put("sid", sid);
-        parameters.put("partner_order_id", "ORDER_ID");
+        parameters.put("partner_order_id", String.valueOf(System.currentTimeMillis()));
         parameters.put("partner_user_id", String.valueOf(userId));
         parameters.put("item_name", "BodyCheck 구독");
         parameters.put("quantity", "1");
