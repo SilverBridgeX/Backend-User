@@ -14,6 +14,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -71,7 +72,7 @@ public class PaymentService {
         }
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public PaymentDto.KakaoApproveResponse approveResponse(String pgToken, Long userId) {
         Payment payment = paymentRepository.getLatestKakaoPayInfo(userId)
                 .orElseThrow(() -> GeneralException.of(ErrorCode.TID_NOT_EXIST));
@@ -214,12 +215,10 @@ public class PaymentService {
     @Transactional
     public void saveSid(PaymentDto.KakaoApproveResponse kakaoApproveResponse) {
 
-        Payment kakaoPay = paymentRepository.findByTid(kakaoApproveResponse.getTid())
+        Payment kakaoPay = paymentRepository.findTopByTidOrderByIdDesc(kakaoApproveResponse.getTid())
                 .orElseThrow(() -> new GeneralException(ErrorCode.TID_NOT_EXIST));
 
-        kakaoPay.updateSid(kakaoApproveResponse.getSid());
-
-        paymentRepository.save(kakaoPay);
+        kakaoPay.updateSid(kakaoApproveResponse.getSid()); // jpa에서 영속 상태의 엔티티는 setter 호출만해도 dirty checking 반영됨
     }
 
     @Transactional
@@ -240,25 +239,36 @@ public class PaymentService {
         paymentRepository.delete(kakaoPay);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public PaymentDto.KakaoPayStatus getSubscribeStatus(Long userId) {
+        // 1. 유저 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.USER_NOT_FOUND));
 
+        // 2. 유저가 활성화 상태가 아니면 → 구독 X 상태로 리턴
         if (!user.isSubscribeActive()) {
             return PaymentConverter.toKakaoPayStatus(false, new PaymentDto.KakaoSubscribeStatusResponse());
         }
 
-        Payment kakaoPay = getKakaoPayInfo(userId);
+        // 3. 최신 결제 정보 조회
+        Optional<Payment> optionalKakaoPay = paymentRepository.getLatestKakaoPayInfo(userId);
 
-        if (kakaoPay.getSid() != null && !kakaoPay.getSid().isEmpty()) {
-            PaymentDto.KakaoSubscribeStatusResponse kakaoSubscribeStatusResponse = subscribeStatusResponse(
-                    kakaoPay.getSid());
-            return PaymentConverter.toKakaoPayStatus(true, kakaoSubscribeStatusResponse);
+        // 4. 결제 정보가 없거나, sid가 없으면 → 구독 비활성화 처리 후 구독 X 상태 리턴
+        if (optionalKakaoPay.isEmpty() || optionalKakaoPay.get().getSid() == null || optionalKakaoPay.get().getSid()
+                .isEmpty()) {
+            // 추후 결제 취소가 안되었는데 이전 sid가 없다 -> 이전 정기결제 실패 -> 재시도 로직 수가 에정
+            user.disableSubscription();
+            return PaymentConverter.toKakaoPayStatus(false, new PaymentDto.KakaoSubscribeStatusResponse());
         }
 
-        return PaymentConverter.toKakaoPayStatus(false, new PaymentDto.KakaoSubscribeStatusResponse());
+        // 5. 결제 정보가 있고 sid도 있으면 → 구독 O 상태 리턴
+        Payment kakaoPay = optionalKakaoPay.get();
+        PaymentDto.KakaoSubscribeStatusResponse kakaoSubscribeStatusResponse = subscribeStatusResponse(
+                kakaoPay.getSid());
+
+        return PaymentConverter.toKakaoPayStatus(true, kakaoSubscribeStatusResponse);
     }
+
 
     @Transactional
     public void regularPayment() {
