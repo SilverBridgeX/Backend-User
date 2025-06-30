@@ -16,11 +16,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
@@ -74,15 +76,15 @@ public class PaymentService {
 
     @Transactional
     public PaymentDto.KakaoApproveResponse approveResponse(String pgToken, Long userId) {
-        Payment payment = paymentRepository.getLatestKakaoPayInfo(userId)
+        Payment payment = paymentRepository.findTopByUserIdOrderByIdDesc(userId)
                 .orElseThrow(() -> GeneralException.of(ErrorCode.TID_NOT_EXIST));
         String tid = payment.getTid();
 
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("cid", cid);
         parameters.put("tid", tid);
-        parameters.put("partner_order_id", "ORDER_ID");
-        parameters.put("partner_user_id", "USER_ID");
+        parameters.put("partner_order_id", String.valueOf(System.currentTimeMillis()));
+        parameters.put("partner_user_id", String.valueOf(userId));
         parameters.put("pg_token", pgToken);
 
         try {
@@ -145,7 +147,7 @@ public class PaymentService {
 
     @Transactional
     public PaymentDto.KakaoSubscribeCancelResponse subscribeCancelResponse(Long userId) {
-        Payment kakaoPay = paymentRepository.getLatestKakaoPayInfo(userId)
+        Payment kakaoPay = paymentRepository.findTopByUserIdOrderByIdDesc(userId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.TID_NOT_EXIST));
 
         String sid = kakaoPay.getSid();
@@ -192,7 +194,7 @@ public class PaymentService {
 
     @Transactional(readOnly = true)
     public Payment getKakaoPayInfo(Long userId) {
-        Payment kakaoPay = paymentRepository.getLatestKakaoPayInfo(userId)
+        Payment kakaoPay = paymentRepository.findTopByUserIdOrderByIdDesc(userId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.TID_NOT_EXIST));
 
         return kakaoPay;
@@ -233,7 +235,7 @@ public class PaymentService {
 
     @Transactional
     public void cancelPay(Long userId) {
-        Payment kakaoPay = paymentRepository.getLatestKakaoPayInfo(userId)
+        Payment kakaoPay = paymentRepository.findTopByUserIdOrderByIdDesc(userId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.TID_NOT_EXIST));
 
         paymentRepository.delete(kakaoPay);
@@ -247,21 +249,25 @@ public class PaymentService {
 
         // 2. 유저가 활성화 상태가 아니면 → 구독 X 상태로 리턴
         if (!user.isSubscribeActive()) {
+            log.info("유저가 활성화 상태가 아니면 → 구독 X 상태로 리턴");
             return PaymentConverter.toKakaoPayStatus(false, new PaymentDto.KakaoSubscribeStatusResponse());
         }
 
         // 3. 최신 결제 정보 조회
-        Optional<Payment> optionalKakaoPay = paymentRepository.getLatestKakaoPayInfo(userId);
+        log.info("최신 결제 정보 조회");
+        Optional<Payment> optionalKakaoPay = paymentRepository.findTopByUserIdOrderByIdDesc(userId);
 
         // 4. 결제 정보가 없거나, sid가 없으면 → 구독 비활성화 처리 후 구독 X 상태 리턴
         if (optionalKakaoPay.isEmpty() || optionalKakaoPay.get().getSid() == null || optionalKakaoPay.get().getSid()
                 .isEmpty()) {
+            log.info("결제 정보가 없거나, sid가 없으면 → 구독 비활성화 처리 후 구독 X 상태 리턴");
             // 추후 결제 취소가 안되었는데 이전 sid가 없다 -> 이전 정기결제 실패 -> 재시도 로직 수가 에정
             user.disableSubscription();
             return PaymentConverter.toKakaoPayStatus(false, new PaymentDto.KakaoSubscribeStatusResponse());
         }
 
         // 5. 결제 정보가 있고 sid도 있으면 → 구독 O 상태 리턴
+        log.info("결제 정보가 있고 sid도 있으면 → 구독 O 상태 리턴");
         Payment kakaoPay = optionalKakaoPay.get();
         PaymentDto.KakaoSubscribeStatusResponse kakaoSubscribeStatusResponse = subscribeStatusResponse(
                 kakaoPay.getSid());

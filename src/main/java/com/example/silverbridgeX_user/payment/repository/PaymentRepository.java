@@ -16,5 +16,5 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     List<Payment> findAllWithMemberAndSidNotNull();
 
     @Query("SELECT p FROM Payment p WHERE p.user.id = :userId ORDER BY p.createdAt DESC")
-    Optional<Payment> getLatestKakaoPayInfo(@Param("userId") Long userId);
+    Optional<Payment> findTopByUserIdOrderByIdDesc(@Param("userId") Long userId);
 }
