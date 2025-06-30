@@ -23,14 +23,24 @@ public class PaymentConverter {
 
     }
 
-    public static PaymentDto.KakaoPayStatus toKakaoPayStatus(boolean isLogExist, PaymentDto.KakaoSubscribeStatusResponse kakaoSubscribeStatusResponse) {
-        String status = kakaoSubscribeStatusResponse.getStatus();
+    public static PaymentDto.KakaoPayStatus toKakaoPayStatus(boolean isLogExist,
+                                                             PaymentDto.KakaoSubscribeStatusResponse kakaoSubscribeStatusResponse) {
+        String status;
+        if (!isLogExist) {
+            // 결제 시도 이력이 없으면 무조건 INACTIVE
+            status = "INACTIVE";
+        } else {
+            // 결제 시도 이력이 있으면 실제 상태 조회
+            status = kakaoSubscribeStatusResponse.getStatus();
+        }
 
         String last_approved_at;
-        if(kakaoSubscribeStatusResponse.getLast_approved_at() == null || kakaoSubscribeStatusResponse.getLast_approved_at().isEmpty()) {
+        if (kakaoSubscribeStatusResponse.getLast_approved_at() == null
+                || kakaoSubscribeStatusResponse.getLast_approved_at().isEmpty()) {
             last_approved_at = kakaoSubscribeStatusResponse.getCreated_at();
+        } else {
+            last_approved_at = kakaoSubscribeStatusResponse.getLast_approved_at();
         }
-        else last_approved_at = kakaoSubscribeStatusResponse.getLast_approved_at();
 
         return PaymentDto.KakaoPayStatus.builder()
                 .isLogExist(isLogExist)
